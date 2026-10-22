@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="YasliBakim.Business/YasliBakim.Business.csproj" />
+  <Project Path="YasliBakim.DataAccess/YasliBakim.DataAccess.csproj" />
+  <Project Path="YasliBakim.Entities/YasliBakim.Entities.csproj" />
+  <Project Path="yaslibakimapp/yaslibakimapp.csproj" />
+</Solution>
