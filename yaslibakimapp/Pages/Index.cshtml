@@ -1,10 +1,53 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Genel Bakış";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<h1 class="h3 mb-3">Genel Bakış</h1>
+<p class="text-muted">Örnek veriler sentetiktir; gerçek kişilere ait değildir.</p>
+
+<h2 class="h5 mt-4">Açık olaylar (@Model.AcikOlaylar.Count)</h2>
+<table class="table table-sm">
+    <thead><tr><th>Seviye</th><th>Tür</th><th>Yaşlı</th><th>Açıklama</th><th>Durum</th><th>İlgilenen</th><th>Zaman</th></tr></thead>
+    <tbody>
+    @foreach (var o in Model.AcikOlaylar)
+    {
+        <tr>
+            <td>@o.Seviye</td>
+            <td>@o.Tur</td>
+            <td>@o.Yasli.Ad @o.Yasli.Soyad</td>
+            <td>@o.Aciklama</td>
+            <td>@o.Durum</td>
+            <td>@(o.IlgilenenBakici is null ? "—" : $"{o.IlgilenenBakici.Ad} {o.IlgilenenBakici.Soyad}")</td>
+            <td>@o.OlusmaZamani.ToString("dd.MM.yyyy HH:mm")</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<h2 class="h5 mt-4">Yaşlılar (@Model.Yaslilar.Count)</h2>
+<table class="table table-sm">
+    <thead><tr><th>Ad Soyad</th><th>Doğum</th><th>Bakıcılar</th><th>Bugünkü hatırlatmalar</th></tr></thead>
+    <tbody>
+    @foreach (var (y, bugun) in Model.Yaslilar)
+    {
+        <tr>
+            <td>@y.Ad @y.Soyad</td>
+            <td>@y.DogumTarihi.ToString("dd.MM.yyyy")</td>
+            <td>
+                @foreach (var yb in y.Bakicilar)
+                {
+                    <div>@yb.Bakici.Ad @yb.Bakici.Soyad @(yb.YakinlikDerecesi is null ? "" : $"({yb.YakinlikDerecesi})") @(yb.BirincilSorumluMu ? "★" : "")</div>
+                }
+            </td>
+            <td>
+                @foreach (var h in bugun)
+                {
+                    <div>@h.Saat.ToString("HH:mm") — @h.Baslik</div>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

@@ -2,7 +2,7 @@
 
 Yalnız yaşayan yaşlı bireylerin ilaç, randevu ve günlük rutinlerini hatırlatan; günlük durumlarını kaydeden ve olağan dışı bir durumda (kaçırılan ilaç, acil buton vb.) yakınlarını bilgilendiren web uygulaması.
 
-> **Durum:** Hafta 3: kurulum, mimari ve veri modeli tamamlandı. Uygulama şu an boş iskelet halindedir.
+> **Durum:** Hafta 4: veritabanı şeması (migration), kısıt/indeksler, sentetik örnek veri ve CRUD veri erişim katmanı tamamlandı.
 
 ## Modüller
 
@@ -28,6 +28,7 @@ Katmanlı mimari: **Sunum** (`yaslibakimapp`) → **İş** (`YasliBakim.Business
 
 - Mimari şema ve klasör yapısı: [docs/Mimari.md](docs/Mimari.md)
 - ER diyagramı ve ilişkiler: [docs/ER-Diyagrami.md](docs/ER-Diyagrami.md)
+- Veritabanı, kısıtlar, indeksler ve CRUD: [docs/Veritabani.md](docs/Veritabani.md)
 
 ## Kurulum ve çalıştırma
 
@@ -40,11 +41,17 @@ dotnet build YasliBakim.slnx
 dotnet run --project yaslibakimapp
 ```
 
-Bağlantı dizesi `yaslibakimapp/appsettings.json` içindeki `DefaultConnection` alanındadır.
+Bağlantı dizesi `yaslibakimapp/appsettings.json` içindeki `DefaultConnection` alanındadır. Uygulama Development ortamında ilk açılışta veritabanını migration ile oluşturur ve sentetik örnek veriyi yükler.
+
+```bash
+dotnet test YasliBakim.slnx      # CRUD, ilişki ve kısıt testleri (SQLite in-memory)
+sqlcmd -S "(localdb)\MSSQLLocalDB" -d YasliBakimDb -i database/02_ornek_sorgular.sql   # örnek sorgular
+```
 
 ## Yol haritası
 
 | Hafta | Konu | Durum |
 |---|---|---|
 | 3 | Kurulum, mimari ve veri modeli | ✅ |
-| 4–15 | Modüllerin geliştirilmesi | ⏳ |
+| 4 | Veritabanı tasarımı ve veri erişim katmanı | ✅ |
+| 5–15 | Modüllerin geliştirilmesi | ⏳ |

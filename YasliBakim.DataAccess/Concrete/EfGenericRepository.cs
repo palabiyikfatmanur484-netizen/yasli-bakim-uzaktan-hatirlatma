@@ -21,6 +21,10 @@ public class EfGenericRepository<T> : IGenericRepository<T> where T : class
 
     public async Task<T?> GetByIdAsync(int id) => await _dbSet.FindAsync(id);
 
+    public async Task<T?> GetByKeyAsync(params object[] anahtarlar) => await _dbSet.FindAsync(anahtarlar);
+
+    public Task<bool> AnyAsync(Expression<Func<T, bool>> filtre) => _dbSet.AnyAsync(filtre);
+
     public async Task AddAsync(T entity) => await _dbSet.AddAsync(entity);
 
     public void Update(T entity) => _dbSet.Update(entity);

@@ -48,12 +48,16 @@ YasliBakim.slnx
 ├── YasliBakim.DataAccess/      Veritabanı erişimi (EF Core)
 │   ├── Abstract/               Repository arayüzleri
 │   ├── Concrete/               EF Core implementasyonları
-│   └── Context/                DbContext ve ilişki ayarları (Fluent API)
+│   ├── Context/                DbContext, ilişkiler, kısıtlar, indeksler (Fluent API)
+│   ├── Migrations/             EF Core migration'ları
+│   └── Seed/                   Sentetik örnek veri
 ├── YasliBakim.Business/        İş kuralları
 │   ├── Abstract/               Servis arayüzleri
 │   └── Concrete/               Servis implementasyonları (Manager)
 ├── yaslibakimapp/              Sunum katmanı (Razor Pages web uygulaması)
-└── docs/                       ER diyagramı ve mimari şema
+├── YasliBakim.Tests/           CRUD ve kısıt testleri (xUnit + SQLite in-memory)
+├── database/                   Şema script'i ve örnek SQL sorguları
+└── docs/                       ER diyagramı, mimari şema, veritabanı tasarımı
 ```
 
 ## Gerekçeler
