@@ -2,7 +2,7 @@
 
 Yalnız yaşayan yaşlı bireylerin ilaç, randevu ve günlük rutinlerini hatırlatan; günlük durumlarını kaydeden ve olağan dışı bir durumda (kaçırılan ilaç, acil buton vb.) yakınlarını bilgilendiren web uygulaması.
 
-> **Durum:** Hafta 4: veritabanı şeması (migration), kısıt/indeksler, sentetik örnek veri ve CRUD veri erişim katmanı tamamlandı.
+> **Durum:** Hafta 5: kayıt/giriş, parola hash'leme, oturum yönetimi ve rol tabanlı erişim (Yönetici / Bakıcı / Yaşlı) tamamlandı.
 
 ## Modüller
 
@@ -29,6 +29,7 @@ Katmanlı mimari: **Sunum** (`yaslibakimapp`) → **İş** (`YasliBakim.Business
 - Mimari şema ve klasör yapısı: [docs/Mimari.md](docs/Mimari.md)
 - ER diyagramı ve ilişkiler: [docs/ER-Diyagrami.md](docs/ER-Diyagrami.md)
 - Veritabanı, kısıtlar, indeksler ve CRUD: [docs/Veritabani.md](docs/Veritabani.md)
+- Kimlik doğrulama, roller ve güvenlik notu: [docs/Guvenlik.md](docs/Guvenlik.md)
 
 ## Kurulum ve çalıştırma
 
@@ -43,8 +44,11 @@ dotnet run --project yaslibakimapp
 
 Bağlantı dizesi `yaslibakimapp/appsettings.json` içindeki `DefaultConnection` alanındadır. Uygulama Development ortamında ilk açılışta veritabanını migration ile oluşturur ve sentetik örnek veriyi yükler.
 
+**Demo hesapları** (yalnızca geliştirme ortamında oluşturulur, parola hepsinde `Demo1234`):
+`yonetici@ornek.test` (Yönetici), `selin@ornek.test` (Bakıcı), `ayse@ornek.test` (Yaşlı). Tam liste: [docs/Guvenlik.md](docs/Guvenlik.md#demo-hesapları-yalnızca-geliştirme-ortamı).
+
 ```bash
-dotnet test YasliBakim.slnx      # CRUD, ilişki ve kısıt testleri (SQLite in-memory)
+dotnet test YasliBakim.slnx      # CRUD, kısıt, parola hash ve rol erişim testleri
 sqlcmd -S "(localdb)\MSSQLLocalDB" -d YasliBakimDb -i database/02_ornek_sorgular.sql   # örnek sorgular
 ```
 
@@ -54,4 +58,5 @@ sqlcmd -S "(localdb)\MSSQLLocalDB" -d YasliBakimDb -i database/02_ornek_sorgular
 |---|---|---|
 | 3 | Kurulum, mimari ve veri modeli | ✅ |
 | 4 | Veritabanı tasarımı ve veri erişim katmanı | ✅ |
-| 5–15 | Modüllerin geliştirilmesi | ⏳ |
+| 5 | Kullanıcı yönetimi ve kimlik doğrulama | ✅ |
+| 6–15 | Modüllerin geliştirilmesi | ⏳ |

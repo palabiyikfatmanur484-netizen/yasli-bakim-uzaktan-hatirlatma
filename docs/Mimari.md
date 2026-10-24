@@ -53,8 +53,11 @@ YasliBakim.slnx
 │   └── Seed/                   Sentetik örnek veri
 ├── YasliBakim.Business/        İş kuralları
 │   ├── Abstract/               Servis arayüzleri
-│   └── Concrete/               Servis implementasyonları (Manager)
+│   ├── Concrete/               Servis implementasyonları (Manager)
+│   └── Guvenlik/               Parola hash'leme (PBKDF2)
 ├── yaslibakimapp/              Sunum katmanı (Razor Pages web uygulaması)
+│   ├── Guvenlik/               Oturum claim'leri, roller, oturum doğrulama
+│   └── Pages/Hesap/            Giriş, kayıt, çıkış, erişim engellendi
 ├── YasliBakim.Tests/           CRUD ve kısıt testleri (xUnit + SQLite in-memory)
 ├── database/                   Şema script'i ve örnek SQL sorguları
 └── docs/                       ER diyagramı, mimari şema, veritabanı tasarımı

@@ -14,7 +14,7 @@ public class OlayManager : IOlayService
         _repository = repository;
     }
 
-    public Task<List<Olay>> AcikOlaylarAsync() => _repository.GetAcikOlaylarAsync();
+    public Task<List<Olay>> AcikOlaylarAsync(int? bakiciId = null) => _repository.GetAcikOlaylarAsync(bakiciId);
 
     public Task<Olay?> GetirAsync(int id) => _repository.GetByIdAsync(id);
 

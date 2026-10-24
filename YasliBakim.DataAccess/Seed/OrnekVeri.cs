@@ -97,7 +97,7 @@ public static class OrnekVeri
             }
         }
 
-        // Mehmet dün kendini kötü hissettiğini bildirmiş.
+       
         var mehmetKotu = new AktiviteKaydi
         {
             Yasli = mehmet,
@@ -110,7 +110,6 @@ public static class OrnekVeri
 
         var atlananIlac = aktiviteler.Single(a => a.Durum == AktiviteDurumu.Atlandi);
 
-        // --- Olaylar ---
         var olaylar = new List<Olay>
         {
             new() { Yasli = hasan,  AktiviteKaydi = atlananIlac, IlgilenenBakici = murat, Tur = OlayTuru.KacirilanHatirlatma, Seviye = OlaySeviyesi.Yuksek, Aciklama = "Donepezil dozu atlandı.", OlusmaZamani = atlananIlac.KayitZamani, Durum = OlayDurumu.Goruldu },
@@ -125,7 +124,40 @@ public static class OrnekVeri
         context.AktiviteKayitlari.AddRange(aktiviteler);
         context.Olaylar.AddRange(olaylar);
 
-        // Tek SaveChanges = tek transaction: biri hata verirse hiçbiri eklenmez.
+      
+        await context.SaveChangesAsync();
+    }
+
+    // Yalnızca geliştirme ortamı için demo hesaplarının ortak parolası.
+    public const string DemoParola = "Demo1234";
+
+    /// <summary>
+    /// Demo hesaplarını ekler. Parola düz metin olarak saklanmaz, <paramref name="parolaHashle"/> ile hash'lenir
+    /// (DataAccess katmanı iş katmanındaki hasher'ı bilmez, fonksiyon dışarıdan verilir).
+    /// </summary>
+    public static async Task KullanicilariYukleAsync(YasliBakimDbContext context, Func<string, string> parolaHashle)
+    {
+        if (await context.Kullanicilar.AnyAsync())
+            return;
+
+        var bakicilar = await context.Bakicilar.ToDictionaryAsync(b => b.Eposta);
+        var yaslilar = await context.Yaslilar.ToListAsync();
+
+        var kullanicilar = new List<Kullanici>
+        {
+            new() { Eposta = "yonetici@ornek.test", Rol = KullaniciRolu.Yonetici },
+        };
+        foreach (var eposta in new[] { "elif@ornek.test", "selin@ornek.test", "murat@ornek.test", "can@ornek.test" })
+            if (bakicilar.TryGetValue(eposta, out var b))
+                kullanicilar.Add(new Kullanici { Eposta = eposta, Rol = KullaniciRolu.Bakici, Bakici = b });
+        foreach (var (ad, eposta) in new[] { ("Ayşe", "ayse@ornek.test"), ("Hasan", "hasan@ornek.test") })
+            if (yaslilar.FirstOrDefault(y => y.Ad == ad) is { } y)
+                kullanicilar.Add(new Kullanici { Eposta = eposta, Rol = KullaniciRolu.Yasli, Yasli = y });
+
+        foreach (var k in kullanicilar)
+            k.ParolaHash = parolaHashle(DemoParola);
+
+        context.Kullanicilar.AddRange(kullanicilar);
         await context.SaveChangesAsync();
     }
 }

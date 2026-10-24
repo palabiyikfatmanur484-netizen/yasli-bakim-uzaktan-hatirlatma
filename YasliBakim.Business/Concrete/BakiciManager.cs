@@ -25,6 +25,9 @@ public class BakiciManager : IBakiciService
 
     public Task<List<Yasli>> YaslilariGetirAsync(int bakiciId) => _repository.GetYaslilariAsync(bakiciId);
 
+    public Task<bool> YasliyaAtanmisMiAsync(int bakiciId, int yasliId) =>
+        _yasliBakiciRepository.AnyAsync(yb => yb.BakiciId == bakiciId && yb.YasliId == yasliId);
+
     public async Task EkleAsync(Bakici bakici)
     {
         bakici.Eposta = bakici.Eposta.Trim().ToLowerInvariant();

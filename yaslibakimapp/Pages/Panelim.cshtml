@@ -1,0 +1,24 @@
+@page
+@model PanelimModel
+@{
+    ViewData["Title"] = "Panelim";
+}
+
+<h1 class="h3">Merhaba @Model.Yasli.Ad</h1>
+
+@if (Model.Mesaj is not null)
+{
+    <div class="alert alert-success fs-5">@Model.Mesaj</div>
+}
+
+<form method="post" asp-page-handler="Acil" class="my-4">
+    <button type="submit" class="btn btn-danger btn-lg w-100 py-4 fs-3">ACİL YARDIM</button>
+</form>
+
+<h2 class="h4">Bugün</h2>
+<ul class="list-group fs-5">
+    @foreach (var h in Model.Bugun)
+    {
+        <li class="list-group-item"><strong>@h.Saat.ToString("HH:mm")</strong> — @h.Baslik</li>
+    }
+</ul>

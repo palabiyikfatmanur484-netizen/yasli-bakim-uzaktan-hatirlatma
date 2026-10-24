@@ -15,6 +15,7 @@ public class YasliBakimDbContext : DbContext
     public DbSet<Hatirlatma> Hatirlatmalar => Set<Hatirlatma>();
     public DbSet<AktiviteKaydi> AktiviteKayitlari => Set<AktiviteKaydi>();
     public DbSet<Olay> Olaylar => Set<Olay>();
+    public DbSet<Kullanici> Kullanicilar => Set<Kullanici>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -122,6 +123,28 @@ public class YasliBakimDbContext : DbContext
             // Yakın paneli: açık olaylar, önce en kritik olanlar.
             e.HasIndex(x => new { x.Durum, x.Seviye }).HasDatabaseName("IX_Olay_Durum_Seviye");
             e.HasIndex(x => new { x.YasliId, x.OlusmaZamani }).HasDatabaseName("IX_Olay_Yasli_Zaman");
+        });
+
+        // 1-1 (0..1): Bakici -> Kullanici, Yasli -> Kullanici
+        modelBuilder.Entity<Kullanici>(e =>
+        {
+            // Rol ile bağlı kayıt tutarlı olmalı: bakıcı hesabı yalnız bakıcıya, yaşlı hesabı yalnız yaşlıya bağlanır.
+            e.ToTable("Kullanicilar", t =>
+                t.HasCheckConstraint("CK_Kullanici_Rol",
+                    "([Rol] = 1 AND [BakiciId] IS NULL AND [YasliId] IS NULL) OR " +
+                    "([Rol] = 2 AND [BakiciId] IS NOT NULL AND [YasliId] IS NULL) OR " +
+                    "([Rol] = 3 AND [YasliId] IS NOT NULL AND [BakiciId] IS NULL)"));
+
+            e.Property(x => x.Eposta).HasMaxLength(100).IsRequired();
+            e.Property(x => x.ParolaHash).HasMaxLength(200).IsRequired();
+
+            // Giriş sorgusu e-posta ile yapılır; aynı e-posta ile iki hesap açılamaz.
+            e.HasIndex(x => x.Eposta).IsUnique().HasDatabaseName("UX_Kullanici_Eposta");
+
+            e.HasOne(x => x.Bakici).WithOne()
+                .HasForeignKey<Kullanici>(x => x.BakiciId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Yasli).WithOne()
+                .HasForeignKey<Kullanici>(x => x.YasliId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

@@ -11,6 +11,22 @@ erDiagram
     YASLI ||--o{ OLAY : "tetikler"
     BAKICI |o--o{ OLAY : "ilgilenir"
     AKTIVITE_KAYDI |o--o| OLAY : "neden olur"
+    BAKICI |o--o| KULLANICI : "hesabı"
+    YASLI |o--o| KULLANICI : "hesabı"
+
+    KULLANICI {
+        int Id PK
+        string Eposta UK
+        string ParolaHash "PBKDF2 + tuz"
+        enum Rol "Yonetici | Bakici | Yasli"
+        int BakiciId FK "nullable, unique"
+        int YasliId FK "nullable, unique"
+        bool AktifMi
+        int BasarisizGirisSayisi
+        datetime KilitBitisZamani "nullable"
+        datetime SonGirisZamani "nullable"
+        datetime OlusturmaTarihi
+    }
 
     YASLI {
         int Id PK
@@ -89,6 +105,7 @@ erDiagram
 | **Hatirlatma** | İlaç, randevu, su vb. zamanlanmış hatırlatma | Hatırlatma |
 | **AktiviteKaydi** | Hatırlatma onayı veya günlük durum bildirimi | Günlük durum |
 | **Olay** | Yakınlara giden uyarı/alarm | Anomali bildirimi, Acil buton |
+| **Kullanici** | Giriş hesabı (e-posta, parola hash'i, rol) | Kimlik doğrulama (Hafta 5) |
 
 ## İlişkiler
 

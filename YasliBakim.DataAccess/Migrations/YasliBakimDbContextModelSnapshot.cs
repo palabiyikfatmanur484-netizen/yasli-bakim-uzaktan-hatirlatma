@@ -168,6 +168,68 @@ namespace YasliBakim.DataAccess.Migrations
                         });
                 });
 
+            modelBuilder.Entity("YasliBakim.Entities.Concrete.Kullanici", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("AktifMi")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("BakiciId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BasarisizGirisSayisi")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Eposta")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("KilitBitisZamani")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("OlusturmaTarihi")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ParolaHash")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Rol")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("SonGirisZamani")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("YasliId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BakiciId")
+                        .IsUnique()
+                        .HasFilter("[BakiciId] IS NOT NULL");
+
+                    b.HasIndex("Eposta")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Kullanici_Eposta");
+
+                    b.HasIndex("YasliId")
+                        .IsUnique()
+                        .HasFilter("[YasliId] IS NOT NULL");
+
+                    b.ToTable("Kullanicilar", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Kullanici_Rol", "([Rol] = 1 AND [BakiciId] IS NULL AND [YasliId] IS NULL) OR ([Rol] = 2 AND [BakiciId] IS NOT NULL AND [YasliId] IS NULL) OR ([Rol] = 3 AND [YasliId] IS NOT NULL AND [BakiciId] IS NULL)");
+                        });
+                });
+
             modelBuilder.Entity("YasliBakim.Entities.Concrete.Olay", b =>
                 {
                     b.Property<int>("Id")
@@ -336,6 +398,23 @@ namespace YasliBakim.DataAccess.Migrations
                         .IsRequired();
 
                     b.Navigation("OlusturanBakici");
+
+                    b.Navigation("Yasli");
+                });
+
+            modelBuilder.Entity("YasliBakim.Entities.Concrete.Kullanici", b =>
+                {
+                    b.HasOne("YasliBakim.Entities.Concrete.Bakici", "Bakici")
+                        .WithOne()
+                        .HasForeignKey("YasliBakim.Entities.Concrete.Kullanici", "BakiciId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("YasliBakim.Entities.Concrete.Yasli", "Yasli")
+                        .WithOne()
+                        .HasForeignKey("YasliBakim.Entities.Concrete.Kullanici", "YasliId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Bakici");
 
                     b.Navigation("Yasli");
                 });

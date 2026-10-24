@@ -13,12 +13,19 @@ public class EfOlayRepository : EfGenericRepository<Olay>, IOlayRepository
     }
 
     // IX_Olay_Durum_Seviye indeksini kullanır.
-    public Task<List<Olay>> GetAcikOlaylarAsync() =>
-        _dbSet
+    public Task<List<Olay>> GetAcikOlaylarAsync(int? bakiciId = null)
+    {
+        var sorgu = _dbSet
             .Include(o => o.Yasli)
             .Include(o => o.IlgilenenBakici)
-            .Where(o => o.Durum != OlayDurumu.Cozuldu)
+            .Where(o => o.Durum != OlayDurumu.Cozuldu);
+
+        if (bakiciId is not null)
+            sorgu = sorgu.Where(o => o.Yasli.Bakicilar.Any(yb => yb.BakiciId == bakiciId));
+
+        return sorgu
             .OrderByDescending(o => o.Seviye).ThenByDescending(o => o.OlusmaZamani)
             .AsNoTracking()
             .ToListAsync();
+    }
 }

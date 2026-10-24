@@ -5,5 +5,6 @@ namespace YasliBakim.DataAccess.Abstract;
 public interface IOlayRepository : IGenericRepository<Olay>
 {
     // Çözülmemiş olaylar: önce en yüksek seviye, sonra en yeni.
-    Task<List<Olay>> GetAcikOlaylarAsync();
+    // bakiciId verilirse yalnızca o bakıcıya atanmış yaşlıların olayları döner.
+    Task<List<Olay>> GetAcikOlaylarAsync(int? bakiciId = null);
 }

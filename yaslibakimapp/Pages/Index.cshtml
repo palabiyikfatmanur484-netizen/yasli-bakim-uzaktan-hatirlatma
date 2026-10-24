@@ -5,7 +5,10 @@
 }
 
 <h1 class="h3 mb-3">Genel Bakış</h1>
-<p class="text-muted">Örnek veriler sentetiktir; gerçek kişilere ait değildir.</p>
+<p class="text-muted">
+    @(User.IsInRole(yaslibakimapp.Guvenlik.Roller.Yonetici) ? "Tüm yaşlılar gösteriliyor." : "Yalnızca size atanmış yaşlılar gösteriliyor.")
+    Örnek veriler sentetiktir; gerçek kişilere ait değildir.
+</p>
 
 <h2 class="h5 mt-4">Açık olaylar (@Model.AcikOlaylar.Count)</h2>
 <table class="table table-sm">
@@ -33,7 +36,7 @@
     @foreach (var (y, bugun) in Model.Yaslilar)
     {
         <tr>
-            <td>@y.Ad @y.Soyad</td>
+            <td><a asp-page="/Yaslilar/Detay" asp-route-id="@y.Id">@y.Ad @y.Soyad</a></td>
             <td>@y.DogumTarihi.ToString("dd.MM.yyyy")</td>
             <td>
                 @foreach (var yb in y.Bakicilar)

@@ -235,3 +235,64 @@ END;
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261023073856_KullaniciTablosu'
+)
+BEGIN
+    CREATE TABLE [Kullanicilar] (
+        [Id] int NOT NULL IDENTITY,
+        [Eposta] nvarchar(100) NOT NULL,
+        [ParolaHash] nvarchar(200) NOT NULL,
+        [Rol] int NOT NULL,
+        [BakiciId] int NULL,
+        [YasliId] int NULL,
+        [AktifMi] bit NOT NULL,
+        [BasarisizGirisSayisi] int NOT NULL,
+        [KilitBitisZamani] datetime2 NULL,
+        [SonGirisZamani] datetime2 NULL,
+        [OlusturmaTarihi] datetime2 NOT NULL,
+        CONSTRAINT [PK_Kullanicilar] PRIMARY KEY ([Id]),
+        CONSTRAINT [CK_Kullanici_Rol] CHECK (([Rol] = 1 AND [BakiciId] IS NULL AND [YasliId] IS NULL) OR ([Rol] = 2 AND [BakiciId] IS NOT NULL AND [YasliId] IS NULL) OR ([Rol] = 3 AND [YasliId] IS NOT NULL AND [BakiciId] IS NULL)),
+        CONSTRAINT [FK_Kullanicilar_Bakicilar_BakiciId] FOREIGN KEY ([BakiciId]) REFERENCES [Bakicilar] ([Id]) ON DELETE CASCADE,
+        CONSTRAINT [FK_Kullanicilar_Yaslilar_YasliId] FOREIGN KEY ([YasliId]) REFERENCES [Yaslilar] ([Id]) ON DELETE CASCADE
+    );
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261023073856_KullaniciTablosu'
+)
+BEGIN
+    EXEC(N'CREATE UNIQUE INDEX [IX_Kullanicilar_BakiciId] ON [Kullanicilar] ([BakiciId]) WHERE [BakiciId] IS NOT NULL');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261023073856_KullaniciTablosu'
+)
+BEGIN
+    EXEC(N'CREATE UNIQUE INDEX [IX_Kullanicilar_YasliId] ON [Kullanicilar] ([YasliId]) WHERE [YasliId] IS NOT NULL');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261023073856_KullaniciTablosu'
+)
+BEGIN
+    CREATE UNIQUE INDEX [UX_Kullanici_Eposta] ON [Kullanicilar] ([Eposta]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261023073856_KullaniciTablosu'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261023073856_KullaniciTablosu', N'10.0.13');
+END;
+
+COMMIT;
+GO
+

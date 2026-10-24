@@ -1,0 +1,46 @@
+@page "{id:int}"
+@model yaslibakimapp.Pages.Yaslilar.DetayModel
+@{
+    ViewData["Title"] = $"{Model.Yasli.Ad} {Model.Yasli.Soyad}";
+}
+
+<a asp-page="/Index">&larr; Genel bakış</a>
+<h1 class="h3 mt-2">@Model.Yasli.Ad @Model.Yasli.Soyad</h1>
+
+<dl class="row">
+    <dt class="col-sm-3">Doğum tarihi</dt><dd class="col-sm-9">@Model.Yasli.DogumTarihi.ToString("dd.MM.yyyy")</dd>
+    <dt class="col-sm-3">Telefon</dt><dd class="col-sm-9">@Model.Yasli.Telefon</dd>
+    <dt class="col-sm-3">Adres</dt><dd class="col-sm-9">@Model.Yasli.Adres</dd>
+    <dt class="col-sm-3">Kronik hastalıklar</dt><dd class="col-sm-9">@Model.Yasli.KronikHastaliklar</dd>
+    <dt class="col-sm-3">Acil durum notu</dt><dd class="col-sm-9">@Model.Yasli.AcilDurumNotu</dd>
+</dl>
+
+<h2 class="h5">Hatırlatmalar</h2>
+<table class="table table-sm">
+    <thead><tr><th>Saat</th><th>Başlık</th><th>Tür</th><th>Tekrar</th><th>Durum</th></tr></thead>
+    <tbody>
+    @foreach (var h in Model.Yasli.Hatirlatmalar.OrderBy(h => h.Saat))
+    {
+        <tr class="@(h.AktifMi ? "" : "text-muted")">
+            <td>@h.Saat.ToString("HH:mm")</td><td>@h.Baslik</td><td>@h.Tur</td><td>@h.Tekrar</td>
+            <td>@(h.AktifMi ? "Aktif" : "Pasif")</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<h2 class="h5">Son 7 gün</h2>
+<table class="table table-sm">
+    <thead><tr><th>Zaman</th><th>Kayıt</th><th>Sonuç</th><th>Not</th></tr></thead>
+    <tbody>
+    @foreach (var a in Model.SonKayitlar)
+    {
+        <tr>
+            <td>@a.KayitZamani.ToString("dd.MM HH:mm")</td>
+            <td>@(a.Hatirlatma?.Baslik ?? "Günlük durum")</td>
+            <td>@(a.Durum?.ToString() ?? a.RuhHali?.ToString())</td>
+            <td>@a.Not</td>
+        </tr>
+    }
+    </tbody>
+</table>

@@ -1,0 +1,46 @@
+@page
+@model yaslibakimapp.Pages.Yonetim.KullanicilarModel
+@{
+    ViewData["Title"] = "Kullanıcılar";
+}
+
+<h1 class="h3 mb-3">Kullanıcılar</h1>
+<p class="text-muted">Parolalar yalnızca hash olarak saklanır; burada hiçbir zaman gösterilmez.</p>
+
+<table class="table table-sm align-middle">
+    <thead><tr><th>E-posta</th><th>Rol</th><th>Bağlı kişi</th><th>Son giriş</th><th>Durum</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var k in Model.Kullanicilar)
+    {
+        var kilitli = k.KilitBitisZamani > DateTime.Now;
+        <tr>
+            <td>@k.Eposta</td>
+            <td>@k.Rol</td>
+            <td>@(k.Bakici is not null ? $"{k.Bakici.Ad} {k.Bakici.Soyad}" : k.Yasli is not null ? $"{k.Yasli.Ad} {k.Yasli.Soyad}" : "—")</td>
+            <td>@(k.SonGirisZamani?.ToString("dd.MM.yyyy HH:mm") ?? "—")</td>
+            <td>
+                @if (kilitli)
+                {
+                    <span class="badge bg-danger">Kilitli (@k.KilitBitisZamani!.Value.ToString("HH:mm"))</span>
+                }
+                else if (k.BasarisizGirisSayisi > 0)
+                {
+                    <span class="badge bg-warning text-dark">@k.BasarisizGirisSayisi hatalı deneme</span>
+                }
+                else
+                {
+                    <span class="badge bg-success">Aktif</span>
+                }
+            </td>
+            <td>
+                @if (kilitli || k.BasarisizGirisSayisi > 0)
+                {
+                    <form method="post" asp-page-handler="KilidiKaldir" asp-route-id="@k.Id">
+                        <button class="btn btn-sm btn-outline-secondary">Kilidi kaldır</button>
+                    </form>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
