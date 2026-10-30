@@ -20,4 +20,16 @@ public class EfHatirlatmaRepository : EfGenericRepository<Hatirlatma>, IHatirlat
             .OrderBy(h => h.Saat)
             .AsNoTracking()
             .ToListAsync();
+
+    public Task<List<Hatirlatma>> GetAktifHatirlatmalarAsync(DateOnly baslangic, DateOnly bitis) =>
+        _dbSet
+            .Where(h => h.AktifMi
+                        && h.BaslangicTarihi <= bitis
+                        && (h.BitisTarihi == null || h.BitisTarihi >= baslangic))
+            .AsNoTracking()
+            .ToListAsync();
+
+    public Task<bool> AyniHatirlatmaVarMiAsync(int yasliId, string baslik, TimeOnly saat, int haricId = 0) =>
+        _dbSet.AnyAsync(h => h.YasliId == yasliId && h.AktifMi && h.Id != haricId
+                             && h.Saat == saat && h.Baslik == baslik);
 }

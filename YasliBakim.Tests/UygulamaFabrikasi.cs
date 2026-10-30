@@ -34,6 +34,10 @@ public class UygulamaFabrikasi : WebApplicationFactory<Program>
 
             services.RemoveAll<IParolaHasher>();
             services.AddSingleton<IParolaHasher>(new Pbkdf2ParolaHasher(iterasyon: 1_000));
+
+            // Dakikalık arka plan servisi testlerde çalışmaz (aynı bellek veritabanına paralel yazmasın).
+            var arkaPlan = services.Single(d => d.ImplementationType == typeof(yaslibakimapp.Servisler.KacirilanHatirlatmaServisi));
+            services.Remove(arkaPlan);
         });
     }
 

@@ -9,6 +9,7 @@ using YasliBakim.DataAccess.Concrete;
 using YasliBakim.DataAccess.Context;
 using YasliBakim.DataAccess.Seed;
 using yaslibakimapp.Guvenlik;
+using yaslibakimapp.Servisler;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,13 +54,18 @@ builder.Services.AddScoped<IOlayRepository, EfOlayRepository>();
 builder.Services.AddScoped<IKullaniciRepository, EfKullaniciRepository>();
 
 // İş katmanı
+builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<IParolaHasher, Pbkdf2ParolaHasher>();
+builder.Services.AddScoped<IHatirlatmaTakipService, HatirlatmaTakipManager>();
 builder.Services.AddScoped<IYasliService, YasliManager>();
 builder.Services.AddScoped<IBakiciService, BakiciManager>();
 builder.Services.AddScoped<IHatirlatmaService, HatirlatmaManager>();
 builder.Services.AddScoped<IAktiviteService, AktiviteManager>();
 builder.Services.AddScoped<IOlayService, OlayManager>();
 builder.Services.AddScoped<IKimlikService, KimlikManager>();
+
+// Arka plan: her dakika kaçırılan hatırlatmaları işaretler.
+builder.Services.AddHostedService<KacirilanHatirlatmaServisi>();
 
 var app = builder.Build();
 

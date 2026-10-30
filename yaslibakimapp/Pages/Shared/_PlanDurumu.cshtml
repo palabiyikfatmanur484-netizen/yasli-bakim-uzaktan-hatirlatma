@@ -1,0 +1,15 @@
+@using YasliBakim.Business.Abstract
+@model PlanDurumu
+@{
+    var (renk, metin) = Model switch
+    {
+        PlanDurumu.Bekliyor => ("bg-secondary", "Bekliyor"),
+        PlanDurumu.OnayBekleniyor => ("bg-primary", "Onay bekleniyor"),
+        PlanDurumu.Tamamlandi => ("bg-success", "Alındı"),
+        PlanDurumu.Gecikti => ("bg-warning text-dark", "Geç alındı"),
+        PlanDurumu.Atlandi => ("bg-danger", "Atlandı"),
+        PlanDurumu.Kacirildi => ("bg-danger", "Kaçırıldı"),
+        _ => ("bg-light text-dark", Model.ToString()),
+    };
+}
+<span class="badge @renk">@metin</span>

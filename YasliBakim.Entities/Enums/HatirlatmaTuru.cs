@@ -1,11 +1,13 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace YasliBakim.Entities.Enums;
 
 public enum HatirlatmaTuru
 {
-    Ilac = 1,
-    Randevu = 2,
-    SuIcme = 3,
-    Yemek = 4,
-    Egzersiz = 5,
-    Diger = 99
+    [Display(Name = "İlaç")] Ilac = 1,
+    [Display(Name = "Randevu")] Randevu = 2,
+    [Display(Name = "Su içme")] SuIcme = 3,
+    [Display(Name = "Yemek")] Yemek = 4,
+    [Display(Name = "Egzersiz")] Egzersiz = 5,
+    [Display(Name = "Diğer")] Diger = 99
 }

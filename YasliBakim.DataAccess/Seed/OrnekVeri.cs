@@ -81,6 +81,7 @@ public static class OrnekVeri
                     Hatirlatma = h,
                     Tur = AktiviteTuru.HatirlatmaOnayi,
                     Durum = atlandi ? AktiviteDurumu.Atlandi : AktiviteDurumu.Tamamlandi,
+                    PlanlananZaman = tarih.Add(h.Saat.ToTimeSpan()),
                     KayitZamani = tarih.Add(h.Saat.ToTimeSpan()).AddMinutes(atlandi ? 60 : 5),
                 });
             }

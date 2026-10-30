@@ -1,11 +1,17 @@
 @page "{id:int}"
 @model yaslibakimapp.Pages.Yaslilar.DetayModel
+@using YasliBakim.Business.Zamanlama
 @{
     ViewData["Title"] = $"{Model.Yasli.Ad} {Model.Yasli.Soyad}";
 }
 
 <a asp-page="/Index">&larr; Genel bakış</a>
 <h1 class="h3 mt-2">@Model.Yasli.Ad @Model.Yasli.Soyad</h1>
+
+@if (Model.Mesaj is not null)
+{
+    <div class="alert alert-info">@Model.Mesaj</div>
+}
 
 <dl class="row">
     <dt class="col-sm-3">Doğum tarihi</dt><dd class="col-sm-9">@Model.Yasli.DogumTarihi.ToString("dd.MM.yyyy")</dd>
@@ -15,29 +21,85 @@
     <dt class="col-sm-3">Acil durum notu</dt><dd class="col-sm-9">@Model.Yasli.AcilDurumNotu</dd>
 </dl>
 
-<h2 class="h5">Hatırlatmalar</h2>
-<table class="table table-sm">
-    <thead><tr><th>Saat</th><th>Başlık</th><th>Tür</th><th>Tekrar</th><th>Durum</th></tr></thead>
+<div class="row g-3 mb-4">
+    <div class="col-md-7">
+        <h2 class="h5">Bugünkü plan</h2>
+        @if (Model.BugunkuPlan.Count == 0)
+        {
+            <p class="text-muted">Bugün planlanmış hatırlatma yok.</p>
+        }
+        <ul class="list-group">
+            @foreach (var p in Model.BugunkuPlan)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span><strong>@p.PlanlananZaman.ToString("HH:mm")</strong> — @p.Hatirlatma.Baslik
+                        @if (p.Kayit is not null && p.Kayit.Durum is not YasliBakim.Entities.Enums.AktiviteDurumu.Kacirildi)
+                        {
+                            <small class="text-muted">(@p.Kayit.KayitZamani.ToString("HH:mm"))</small>
+                        }
+                    </span>
+                    <partial name="_PlanDurumu" model="p.Durum" />
+                </li>
+            }
+        </ul>
+    </div>
+    <div class="col-md-5">
+        <h2 class="h5">Son 7 gün uyum</h2>
+        @if (Model.Uyum.Oran is null)
+        {
+            <p class="text-muted">Henüz kayıt yok.</p>
+        }
+        else
+        {
+            <p class="display-6 mb-1">%@Model.Uyum.Oran.Value.ToString("0")</p>
+            <p class="text-muted mb-0">
+                @Model.Uyum.Zamaninda zamanında · @Model.Uyum.Gec geç ·
+                @Model.Uyum.Atlanan atlandı · @Model.Uyum.Kacirilan kaçırıldı
+                (toplam @Model.Uyum.Toplam)
+            </p>
+        }
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center">
+    <h2 class="h5 mb-0">Hatırlatmalar</h2>
+    <a class="btn btn-sm btn-primary" asp-page="/Hatirlatmalar/Duzenle" asp-route-yasliId="@Model.Yasli.Id">+ Yeni hatırlatma</a>
+</div>
+<table class="table table-sm align-middle mt-2">
+    <thead><tr><th>Saat</th><th>Başlık</th><th>Tür</th><th>Tekrar</th><th>Tarih</th><th>Sonraki</th><th></th></tr></thead>
     <tbody>
-    @foreach (var h in Model.Yasli.Hatirlatmalar.OrderBy(h => h.Saat))
+    @foreach (var h in Model.Hatirlatmalar)
     {
+        var sonraki = HatirlatmaZamanlayici.SonrakiTekrar(h, Model.Simdi);
         <tr class="@(h.AktifMi ? "" : "text-muted")">
-            <td>@h.Saat.ToString("HH:mm")</td><td>@h.Baslik</td><td>@h.Tur</td><td>@h.Tekrar</td>
-            <td>@(h.AktifMi ? "Aktif" : "Pasif")</td>
+            <td>@h.Saat.ToString("HH:mm")</td>
+            <td>@h.Baslik</td>
+            <td>@h.Tur</td>
+            <td>@h.Tekrar@(h.Tekrar == YasliBakim.Entities.Enums.TekrarTipi.Haftalik ? $" ({h.BaslangicTarihi.ToString("dddd")})" : "")</td>
+            <td>@h.BaslangicTarihi.ToString("dd.MM.yyyy")@(h.BitisTarihi is null ? " →" : h.Tekrar == YasliBakim.Entities.Enums.TekrarTipi.Tek ? "" : $" – {h.BitisTarihi:dd.MM.yyyy}")</td>
+            <td>@(h.AktifMi ? sonraki?.ToString("dd.MM HH:mm") ?? "—" : "Pasif")</td>
+            <td class="text-end text-nowrap">
+                <a class="btn btn-sm btn-outline-secondary" asp-page="/Hatirlatmalar/Duzenle" asp-route-id="@h.Id">Düzenle</a>
+                <form method="post" class="d-inline" asp-page-handler="@(h.AktifMi ? "PasifeAl" : "AktifEt")" asp-route-id="@Model.Yasli.Id">
+                    <input type="hidden" name="hatirlatmaId" value="@h.Id" />
+                    <button class="btn btn-sm @(h.AktifMi ? "btn-outline-danger" : "btn-outline-success")">@(h.AktifMi ? "Pasife al" : "Aktif et")</button>
+                </form>
+            </td>
         </tr>
     }
     </tbody>
 </table>
 
-<h2 class="h5">Son 7 gün</h2>
+<h2 class="h5">Son 7 gün kayıtlar</h2>
 <table class="table table-sm">
-    <thead><tr><th>Zaman</th><th>Kayıt</th><th>Sonuç</th><th>Not</th></tr></thead>
+    <thead><tr><th>Kayıt zamanı</th><th>Kayıt</th><th>Planlanan</th><th>Sonuç</th><th>Not</th></tr></thead>
     <tbody>
     @foreach (var a in Model.SonKayitlar)
     {
         <tr>
             <td>@a.KayitZamani.ToString("dd.MM HH:mm")</td>
             <td>@(a.Hatirlatma?.Baslik ?? "Günlük durum")</td>
+            <td>@a.PlanlananZaman?.ToString("dd.MM HH:mm")</td>
             <td>@(a.Durum?.ToString() ?? a.RuhHali?.ToString())</td>
             <td>@a.Not</td>
         </tr>

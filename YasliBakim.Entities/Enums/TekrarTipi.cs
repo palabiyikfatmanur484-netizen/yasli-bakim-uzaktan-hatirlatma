@@ -1,9 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace YasliBakim.Entities.Enums;
 
 public enum TekrarTipi
 {
-    Tek = 1,
-    Gunluk = 2,
-    Haftalik = 3,
-    Aylik = 4
+    [Display(Name = "Tek seferlik")] Tek = 1,
+    [Display(Name = "Her gün")] Gunluk = 2,
+    [Display(Name = "Her hafta")] Haftalik = 3,
+    [Display(Name = "Her ay")] Aylik = 4
 }

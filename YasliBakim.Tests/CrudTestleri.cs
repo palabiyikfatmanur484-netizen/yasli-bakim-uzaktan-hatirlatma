@@ -13,8 +13,12 @@ public class CrudTestleri : IDisposable
     private readonly YasliManager _yasliService;
     private readonly BakiciManager _bakiciService;
     private readonly HatirlatmaManager _hatirlatmaService;
-    private readonly AktiviteManager _aktiviteService;
+    private readonly HatirlatmaTakipManager _takipService;
     private readonly OlayManager _olayService;
+
+    // "Şu an" bugün 09:10; YeniHatirlatma 09:00'da olduğu için onay penceresi açıktır.
+    private static readonly DateTime Bugun0900 = DateTime.Today.AddHours(9);
+    private readonly SabitSaat _saat = new(Bugun0900.AddMinutes(10));
 
     public CrudTestleri()
     {
@@ -26,8 +30,8 @@ public class CrudTestleri : IDisposable
 
         _yasliService = new YasliManager(yasliRepo);
         _bakiciService = new BakiciManager(new EfBakiciRepository(c), new EfGenericRepository<YasliBakici>(c), yasliRepo);
-        _hatirlatmaService = new HatirlatmaManager(hatirlatmaRepo, aktiviteRepo);
-        _aktiviteService = new AktiviteManager(aktiviteRepo, hatirlatmaRepo, olayRepo);
+        _hatirlatmaService = new HatirlatmaManager(hatirlatmaRepo, aktiviteRepo, yasliRepo, _saat);
+        _takipService = new HatirlatmaTakipManager(hatirlatmaRepo, aktiviteRepo, olayRepo, _saat);
         _olayService = new OlayManager(olayRepo);
     }
 
@@ -39,11 +43,11 @@ public class CrudTestleri : IDisposable
     private static Bakici YeniBakici(string eposta = "test@ornek.test") =>
         new() { Ad = "Test", Soyad = "Bakıcı", Eposta = eposta, Telefon = "0500 000 00 00", Rol = BakiciRolu.AileYakini };
 
-    private static Hatirlatma YeniHatirlatma(int yasliId) =>
+    private static Hatirlatma YeniHatirlatma(int yasliId, string baslik = "İlaç") =>
         new()
         {
-            YasliId = yasliId, Baslik = "İlaç", Tur = HatirlatmaTuru.Ilac, Saat = new TimeOnly(9, 0),
-            Tekrar = TekrarTipi.Gunluk, BaslangicTarihi = DateOnly.FromDateTime(DateTime.Today).AddDays(-1),
+            YasliId = yasliId, Baslik = baslik, Tur = HatirlatmaTuru.Ilac, Saat = new TimeOnly(9, 0),
+            Tekrar = TekrarTipi.Gunluk, BaslangicTarihi = DateOnly.FromDateTime(DateTime.Today),
         };
 
     // --- CRUD ---
@@ -79,12 +83,17 @@ public class CrudTestleri : IDisposable
         await _yasliService.EkleAsync(yasli);
         var bugun = DateOnly.FromDateTime(DateTime.Today);
 
-        var gecerli = YeniHatirlatma(yasli.Id);
-        var pasif = YeniHatirlatma(yasli.Id); pasif.AktifMi = false;
-        var bitmis = YeniHatirlatma(yasli.Id); bitmis.BaslangicTarihi = bugun.AddDays(-10); bitmis.BitisTarihi = bugun.AddDays(-1);
-        var gelecek = YeniHatirlatma(yasli.Id); gelecek.BaslangicTarihi = bugun.AddDays(3);
-        foreach (var h in new[] { gecerli, pasif, bitmis, gelecek })
+        var gecerli = YeniHatirlatma(yasli.Id, "Geçerli");
+        var pasif = YeniHatirlatma(yasli.Id, "Pasif");
+        var gelecek = YeniHatirlatma(yasli.Id, "Gelecek"); gelecek.BaslangicTarihi = bugun.AddDays(3);
+        foreach (var h in new[] { gecerli, pasif, gelecek })
             await _hatirlatmaService.EkleAsync(h);
+        await _hatirlatmaService.PasifeAlAsync(pasif.Id);
+
+        // Geçmiş başlangıç tarihi servisten eklenemez (iş kuralı); bu yüzden doğrudan veritabanına yazılır.
+        var bitmis = YeniHatirlatma(yasli.Id, "Bitmiş"); bitmis.BaslangicTarihi = bugun.AddDays(-10); bitmis.BitisTarihi = bugun.AddDays(-1);
+        _db.Context.Hatirlatmalar.Add(bitmis);
+        await _db.Context.SaveChangesAsync();
 
         var liste = await _hatirlatmaService.BugunkuHatirlatmalarAsync(yasli.Id);
         Assert.Equal(gecerli.Id, Assert.Single(liste).Id);
@@ -159,7 +168,7 @@ public class CrudTestleri : IDisposable
         await _yasliService.EkleAsync(yasli);
         var h = YeniHatirlatma(yasli.Id);
         await _hatirlatmaService.EkleAsync(h);
-        await _aktiviteService.HatirlatmaOnaylaAsync(h.Id, AktiviteDurumu.Atlandi);
+        await _takipService.YanitlaAsync(yasli.Id, h.Id, Bugun0900, alindi: false);
         _db.Context.ChangeTracker.Clear();
 
         await _yasliService.SilAsync(yasli.Id);
@@ -194,7 +203,7 @@ public class CrudTestleri : IDisposable
         await _yasliService.EkleAsync(yasli);
         var h = YeniHatirlatma(yasli.Id);
         await _hatirlatmaService.EkleAsync(h);
-        await _aktiviteService.HatirlatmaOnaylaAsync(h.Id, AktiviteDurumu.Tamamlandi);
+        await _takipService.YanitlaAsync(yasli.Id, h.Id, Bugun0900, alindi: true);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => _hatirlatmaService.SilAsync(h.Id));
         await _hatirlatmaService.PasifeAlAsync(h.Id);
@@ -211,7 +220,7 @@ public class CrudTestleri : IDisposable
         var h = YeniHatirlatma(yasli.Id);
         await _hatirlatmaService.EkleAsync(h);
 
-        var kayit = await _aktiviteService.HatirlatmaOnaylaAsync(h.Id, AktiviteDurumu.Atlandi);
+        var kayit = await _takipService.YanitlaAsync(yasli.Id, h.Id, Bugun0900, alindi: false);
 
         var olay = Assert.Single(await _olayService.AcikOlaylarAsync());
         Assert.Equal(kayit.Id, olay.AktiviteKaydiId);

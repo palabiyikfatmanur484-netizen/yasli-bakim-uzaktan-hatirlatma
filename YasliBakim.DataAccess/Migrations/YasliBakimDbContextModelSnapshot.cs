@@ -46,6 +46,9 @@ namespace YasliBakim.DataAccess.Migrations
                     b.Property<DateTime>("OlusturmaTarihi")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("PlanlananZaman")
+                        .HasColumnType("datetime2");
+
                     b.Property<int?>("RuhHali")
                         .HasColumnType("int");
 
@@ -57,14 +60,17 @@ namespace YasliBakim.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("HatirlatmaId");
+                    b.HasIndex("HatirlatmaId", "PlanlananZaman")
+                        .IsUnique()
+                        .HasDatabaseName("UX_AktiviteKaydi_Hatirlatma_Planlanan")
+                        .HasFilter("[HatirlatmaId] IS NOT NULL AND [PlanlananZaman] IS NOT NULL");
 
                     b.HasIndex("YasliId", "KayitZamani")
                         .HasDatabaseName("IX_AktiviteKaydi_Yasli_Zaman");
 
                     b.ToTable("AktiviteKayitlari", null, t =>
                         {
-                            t.HasCheckConstraint("CK_AktiviteKaydi_Tur", "([Tur] = 1 AND [HatirlatmaId] IS NOT NULL AND [Durum] IS NOT NULL) OR ([Tur] = 2 AND [HatirlatmaId] IS NULL AND [RuhHali] IS NOT NULL)");
+                            t.HasCheckConstraint("CK_AktiviteKaydi_Tur", "([Tur] = 1 AND [HatirlatmaId] IS NOT NULL AND [Durum] IS NOT NULL AND [PlanlananZaman] IS NOT NULL) OR ([Tur] = 2 AND [HatirlatmaId] IS NULL AND [RuhHali] IS NOT NULL)");
                         });
                 });
 

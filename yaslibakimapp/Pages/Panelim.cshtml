@@ -1,5 +1,6 @@
 @page
 @model PanelimModel
+@using YasliBakim.Business.Abstract
 @{
     ViewData["Title"] = "Panelim";
 }
@@ -10,15 +11,41 @@
 {
     <div class="alert alert-success fs-5">@Model.Mesaj</div>
 }
+@if (Model.Hata is not null)
+{
+    <div class="alert alert-warning fs-5">@Model.Hata</div>
+}
 
 <form method="post" asp-page-handler="Acil" class="my-4">
     <button type="submit" class="btn btn-danger btn-lg w-100 py-4 fs-3">ACİL YARDIM</button>
 </form>
 
 <h2 class="h4">Bugün</h2>
+@if (Model.Bugun.Count == 0)
+{
+    <p class="fs-5 text-muted">Bugün için hatırlatma yok.</p>
+}
 <ul class="list-group fs-5">
-    @foreach (var h in Model.Bugun)
+    @foreach (var p in Model.Bugun)
     {
-        <li class="list-group-item"><strong>@h.Saat.ToString("HH:mm")</strong> — @h.Baslik</li>
+        <li class="list-group-item py-3 @(p.OnaylanabilirMi ? "border-primary border-2" : "")">
+            <div class="d-flex justify-content-between align-items-center">
+                <span><strong>@p.PlanlananZaman.ToString("HH:mm")</strong> — @p.Hatirlatma.Baslik</span>
+                <partial name="_PlanDurumu" model="p.Durum" />
+            </div>
+            @if (!string.IsNullOrEmpty(p.Hatirlatma.Aciklama))
+            {
+                <div class="text-muted fs-6">@p.Hatirlatma.Aciklama</div>
+            }
+            @if (p.OnaylanabilirMi)
+            {
+                <form method="post" asp-page-handler="Yanit" class="d-flex gap-2 mt-2">
+                    <input type="hidden" name="hatirlatmaId" value="@p.Hatirlatma.Id" />
+                    <input type="hidden" name="planlanan" value="@p.PlanlananZaman.ToString("yyyy-MM-ddTHH:mm:ss")" />
+                    <button type="submit" name="alindi" value="true" class="btn btn-success btn-lg flex-fill">✓ Yaptım</button>
+                    <button type="submit" name="alindi" value="false" class="btn btn-outline-secondary btn-lg">Atla</button>
+                </form>
+            }
+        </li>
     }
 </ul>

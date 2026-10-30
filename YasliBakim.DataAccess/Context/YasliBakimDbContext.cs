@@ -92,7 +92,7 @@ public class YasliBakimDbContext : DbContext
             // Hatırlatma onayında hatırlatma ve durum zorunlu; günlük durumda hatırlatma boş, ruh hali zorunlu.
             e.ToTable("AktiviteKayitlari", t =>
                 t.HasCheckConstraint("CK_AktiviteKaydi_Tur",
-                    "([Tur] = 1 AND [HatirlatmaId] IS NOT NULL AND [Durum] IS NOT NULL) OR " +
+                    "([Tur] = 1 AND [HatirlatmaId] IS NOT NULL AND [Durum] IS NOT NULL AND [PlanlananZaman] IS NOT NULL) OR " +
                     "([Tur] = 2 AND [HatirlatmaId] IS NULL AND [RuhHali] IS NOT NULL)"));
 
             e.Property(x => x.Not).HasMaxLength(500);
@@ -103,6 +103,11 @@ public class YasliBakimDbContext : DbContext
 
             // Yaşlının zaman çizelgesi: tarihe göre son kayıtlar.
             e.HasIndex(x => new { x.YasliId, x.KayitZamani }).HasDatabaseName("IX_AktiviteKaydi_Yasli_Zaman");
+
+            // Bir hatırlatmanın her tekrarı en fazla bir kez yanıtlanır (çift onay / çift alarm engeli).
+            // HatirlatmaId ile başladığı için FK indeksinin yerini de tutar.
+            e.HasIndex(x => new { x.HatirlatmaId, x.PlanlananZaman }).IsUnique()
+                .HasDatabaseName("UX_AktiviteKaydi_Hatirlatma_Planlanan");
         });
 
         // 1-N: Yaşlı -> Olay, Bakıcı -> Olay (ilgilenen); 1-1 (0..1): AktiviteKaydi -> Olay

@@ -54,9 +54,11 @@ YasliBakim.slnx
 ├── YasliBakim.Business/        İş kuralları
 │   ├── Abstract/               Servis arayüzleri
 │   ├── Concrete/               Servis implementasyonları (Manager)
-│   └── Guvenlik/               Parola hash'leme (PBKDF2)
+│   ├── Guvenlik/               Parola hash'leme (PBKDF2)
+│   └── Zamanlama/              Hatırlatma tekrar hesabı ve onay kuralları
 ├── yaslibakimapp/              Sunum katmanı (Razor Pages web uygulaması)
-│   ├── Guvenlik/               Oturum claim'leri, roller, oturum doğrulama
+│   ├── Guvenlik/               Oturum claim'leri, roller, oturum ve sahiplik kontrolü
+│   ├── Servisler/              Arka plan: kaçırılan hatırlatma kontrolü
 │   └── Pages/Hesap/            Giriş, kayıt, çıkış, erişim engellendi
 ├── YasliBakim.Tests/           CRUD ve kısıt testleri (xUnit + SQLite in-memory)
 ├── database/                   Şema script'i ve örnek SQL sorguları

@@ -15,6 +15,12 @@ public class AktiviteKaydi : BaseEntity
     public Hatirlatma? Hatirlatma { get; set; }
 
     public AktiviteTuru Tur { get; set; }
+
+    // Hatırlatmanın hangi tekrarına ait olduğu (ör. 30.10.2026 08:00 dozu). Günlük durumda boş kalır.
+    // (HatirlatmaId, PlanlananZaman) benzersizdir: aynı doz iki kez onaylanamaz.
+    public DateTime? PlanlananZaman { get; set; }
+
+    // Kaydın gerçekten oluşturulduğu an (onay saati).
     public DateTime KayitZamani { get; set; } = DateTime.Now;
     public AktiviteDurumu? Durum { get; set; }
     public RuhHali? RuhHali { get; set; }

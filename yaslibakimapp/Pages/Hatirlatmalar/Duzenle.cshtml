@@ -1,0 +1,67 @@
+@page "{id:int?}"
+@model yaslibakimapp.Pages.Hatirlatmalar.DuzenleModel
+@using YasliBakim.Entities.Enums
+@{
+    ViewData["Title"] = Model.YeniMi ? "Yeni hatırlatma" : "Hatırlatmayı düzenle";
+}
+
+<a asp-page="/Yaslilar/Detay" asp-route-id="@Model.Yasli.Id">&larr; @Model.Yasli.Ad @Model.Yasli.Soyad</a>
+<h1 class="h3 mt-2">@ViewData["Title"]</h1>
+
+@if (Model.Hata is not null)
+{
+    <div class="alert alert-danger">@Model.Hata</div>
+}
+
+<form method="post" class="col-lg-7">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input type="hidden" asp-for="YasliId" />
+
+    <div class="mb-3">
+        <label asp-for="Form.Baslik" class="form-label">Başlık</label>
+        <input asp-for="Form.Baslik" class="form-control" placeholder="ör. Tansiyon ilacı" />
+        <span asp-validation-for="Form.Baslik" class="text-danger"></span>
+    </div>
+    <div class="row">
+        <div class="col-sm-6 mb-3">
+            <label asp-for="Form.Tur" class="form-label">Tür</label>
+            <select asp-for="Form.Tur" asp-items="Html.GetEnumSelectList<HatirlatmaTuru>()" class="form-select"></select>
+        </div>
+        <div class="col-sm-6 mb-3">
+            <label asp-for="Form.Saat" class="form-label">Saat</label>
+            <input asp-for="Form.Saat" type="time" class="form-control" />
+            <span asp-validation-for="Form.Saat" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Form.Tekrar" class="form-label">Tekrar</label>
+        <select asp-for="Form.Tekrar" asp-items="Html.GetEnumSelectList<TekrarTipi>()" class="form-select"></select>
+        <div class="form-text">
+            Haftalık: başlangıç tarihinin günü (ör. her Pazartesi). Aylık: başlangıç tarihinin ay günü (ör. her ayın 15'i).
+            Tek: yalnızca başlangıç günü.
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6 mb-3">
+            <label asp-for="Form.BaslangicTarihi" class="form-label">Başlangıç</label>
+            <input asp-for="Form.BaslangicTarihi" type="date" class="form-control" />
+            <span asp-validation-for="Form.BaslangicTarihi" class="text-danger"></span>
+        </div>
+        <div class="col-sm-6 mb-3">
+            <label asp-for="Form.BitisTarihi" class="form-label">Bitiş (boş = süresiz)</label>
+            <input asp-for="Form.BitisTarihi" type="date" class="form-control" />
+        </div>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Form.Aciklama" class="form-label">Açıklama</label>
+        <textarea asp-for="Form.Aciklama" class="form-control" rows="2" placeholder="ör. Yemekten sonra"></textarea>
+        <span asp-validation-for="Form.Aciklama" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a class="btn btn-link" asp-page="/Yaslilar/Detay" asp-route-id="@Model.Yasli.Id">Vazgeç</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

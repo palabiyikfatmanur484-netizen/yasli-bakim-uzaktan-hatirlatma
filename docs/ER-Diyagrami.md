@@ -74,8 +74,9 @@ erDiagram
         int YasliId FK
         int HatirlatmaId FK "nullable"
         enum Tur "HatirlatmaOnayi | GunlukDurum"
+        datetime PlanlananZaman "nullable; (HatirlatmaId, PlanlananZaman) unique"
         datetime KayitZamani
-        enum Durum "Tamamlandi | Atlandi | Gecikti"
+        enum Durum "Tamamlandi | Atlandi | Gecikti | Kacirildi"
         enum RuhHali "CokIyi ... CokKotu"
         string Not
         datetime OlusturmaTarihi

@@ -296,3 +296,69 @@ END;
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261030080342_HatirlatmaTakibi'
+)
+BEGIN
+    DROP INDEX [IX_AktiviteKayitlari_HatirlatmaId] ON [AktiviteKayitlari];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261030080342_HatirlatmaTakibi'
+)
+BEGIN
+    ALTER TABLE [AktiviteKayitlari] DROP CONSTRAINT [CK_AktiviteKaydi_Tur];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261030080342_HatirlatmaTakibi'
+)
+BEGIN
+    ALTER TABLE [AktiviteKayitlari] ADD [PlanlananZaman] datetime2 NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261030080342_HatirlatmaTakibi'
+)
+BEGIN
+    UPDATE a
+    SET a.PlanlananZaman = DATEADD(SECOND, DATEDIFF(SECOND, CAST('00:00' AS time), h.Saat),
+                                   CAST(CAST(a.KayitZamani AS date) AS datetime2))
+    FROM AktiviteKayitlari a
+    JOIN Hatirlatmalar h ON h.Id = a.HatirlatmaId
+    WHERE a.Tur = 1 AND a.PlanlananZaman IS NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261030080342_HatirlatmaTakibi'
+)
+BEGIN
+    EXEC(N'CREATE UNIQUE INDEX [UX_AktiviteKaydi_Hatirlatma_Planlanan] ON [AktiviteKayitlari] ([HatirlatmaId], [PlanlananZaman]) WHERE [HatirlatmaId] IS NOT NULL AND [PlanlananZaman] IS NOT NULL');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261030080342_HatirlatmaTakibi'
+)
+BEGIN
+    EXEC(N'ALTER TABLE [AktiviteKayitlari] ADD CONSTRAINT [CK_AktiviteKaydi_Tur] CHECK (([Tur] = 1 AND [HatirlatmaId] IS NOT NULL AND [Durum] IS NOT NULL AND [PlanlananZaman] IS NOT NULL) OR ([Tur] = 2 AND [HatirlatmaId] IS NULL AND [RuhHali] IS NOT NULL))');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261030080342_HatirlatmaTakibi'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261030080342_HatirlatmaTakibi', N'10.0.13');
+END;
+
+COMMIT;
+GO
+

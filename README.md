@@ -2,7 +2,7 @@
 
 Yalnız yaşayan yaşlı bireylerin ilaç, randevu ve günlük rutinlerini hatırlatan; günlük durumlarını kaydeden ve olağan dışı bir durumda (kaçırılan ilaç, acil buton vb.) yakınlarını bilgilendiren web uygulaması.
 
-> **Durum:** Hafta 5: kayıt/giriş, parola hash'leme, oturum yönetimi ve rol tabanlı erişim (Yönetici / Bakıcı / Yaşlı) tamamlandı.
+> **Durum:** Hafta 6: İlaç/Aktivite Hatırlatma modülü (tekrarlama, zamanlama, Yaptım/Atla onayı, kaçırılan doz alarmı) tamamlandı.
 
 ## Modüller
 
@@ -30,6 +30,7 @@ Katmanlı mimari: **Sunum** (`yaslibakimapp`) → **İş** (`YasliBakim.Business
 - ER diyagramı ve ilişkiler: [docs/ER-Diyagrami.md](docs/ER-Diyagrami.md)
 - Veritabanı, kısıtlar, indeksler ve CRUD: [docs/Veritabani.md](docs/Veritabani.md)
 - Kimlik doğrulama, roller ve güvenlik notu: [docs/Guvenlik.md](docs/Guvenlik.md)
+- İlaç/Aktivite Hatırlatma modülü: [docs/Hatirlatma.md](docs/Hatirlatma.md)
 
 ## Kurulum ve çalıştırma
 
@@ -59,4 +60,5 @@ sqlcmd -S "(localdb)\MSSQLLocalDB" -d YasliBakimDb -i database/02_ornek_sorgular
 | 3 | Kurulum, mimari ve veri modeli | ✅ |
 | 4 | Veritabanı tasarımı ve veri erişim katmanı | ✅ |
 | 5 | Kullanıcı yönetimi ve kimlik doğrulama | ✅ |
-| 6–15 | Modüllerin geliştirilmesi | ⏳ |
+| 6 | Çekirdek Modül A: İlaç/Aktivite Hatırlatma | ✅ |
+| 7–15 | Modüllerin geliştirilmesi | ⏳ |
