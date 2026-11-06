@@ -90,18 +90,40 @@
     </tbody>
 </table>
 
-<h2 class="h5">Son 7 gün kayıtlar</h2>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <h2 class="h5 mb-0">Günlük durum ve aktivite (son 7 gün)</h2>
+    <div class="d-flex gap-2">
+        @if (!User.IsInRole(Roller.Yonetici))
+        {
+            <a class="btn btn-sm btn-primary" asp-page="/Aktiviteler/Yeni" asp-route-yasliId="@Model.Yasli.Id">+ Aktivite kaydet</a>
+        }
+        <a class="btn btn-sm btn-outline-secondary" asp-page="/Aktiviteler/Gecmis" asp-route-yasliId="@Model.Yasli.Id">Tüm geçmiş</a>
+    </div>
+</div>
+<p class="mt-2 mb-1">
+    Bugün:
+    @if (Model.BugunkuDurum is { } d)
+    {
+        <partial name="_RuhHali" model="d.RuhHali" />
+        @(d.AgriSeviyesi is { } agri ? $" · ağrı {agri}/10" : "")
+        <span class="text-muted">(@d.KayitZamani.ToString("HH:mm")@(d.Not is null ? "" : $" — {d.Not}"))</span>
+    }
+    else
+    {
+        <span class="text-muted">henüz bildirilmedi</span>
+    }
+</p>
 <table class="table table-sm">
-    <thead><tr><th>Kayıt zamanı</th><th>Kayıt</th><th>Planlanan</th><th>Sonuç</th><th>Not</th></tr></thead>
+    <thead><tr><th scope="col">Gün</th><th scope="col">Ruh hali</th><th scope="col">Ağrı</th><th scope="col">Aktivite</th><th scope="col">Hatırlatmalar</th></tr></thead>
     <tbody>
-    @foreach (var a in Model.SonKayitlar)
+    @foreach (var g in Model.Ozet)
     {
         <tr>
-            <td>@a.KayitZamani.ToString("dd.MM HH:mm")</td>
-            <td>@(a.Hatirlatma?.Baslik ?? "Günlük durum")</td>
-            <td>@a.PlanlananZaman?.ToString("dd.MM HH:mm")</td>
-            <td>@(a.Durum?.ToString() ?? a.RuhHali?.ToString())</td>
-            <td>@a.Not</td>
+            <th scope="row">@g.Gun.ToString("dd.MM ddd")</th>
+            <td><partial name="_RuhHali" model="g.Durum?.RuhHali" /></td>
+            <td>@(g.Durum?.AgriSeviyesi is { } a ? $"{a}/10" : "—")</td>
+            <td>@(g.AktiviteSayisi == 0 ? "—" : $"{g.AktiviteSayisi} kayıt, {g.AktiviteDakika} dk")</td>
+            <td>@(g.YanitlananDoz == 0 ? "—" : $"{g.AlinanDoz} / {g.YanitlananDoz} yapıldı")</td>
         </tr>
     }
     </tbody>

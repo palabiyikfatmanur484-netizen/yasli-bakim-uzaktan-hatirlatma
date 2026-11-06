@@ -16,4 +16,5 @@ public class Bakici : BaseEntity
     public ICollection<YasliBakici> Yaslilar { get; set; } = new List<YasliBakici>();
     public ICollection<Hatirlatma> OlusturduguHatirlatmalar { get; set; } = new List<Hatirlatma>();
     public ICollection<Olay> IlgilendigiOlaylar { get; set; } = new List<Olay>();
+    public ICollection<AktiviteKaydi> KaydettigiAktiviteler { get; set; } = new List<AktiviteKaydi>();
 }

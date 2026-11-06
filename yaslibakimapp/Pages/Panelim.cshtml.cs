@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using YasliBakim.Business.Abstract;
 using YasliBakim.Entities.Concrete;
+using YasliBakim.Entities.Enums;
 using yaslibakimapp.Guvenlik;
 
 namespace yaslibakimapp.Pages;
@@ -13,20 +14,23 @@ public class PanelimModel : PageModel
 {
     private readonly IYasliService _yasliService;
     private readonly IHatirlatmaTakipService _takipService;
+    private readonly IAktiviteService _aktiviteService;
     private readonly IOlayService _olayService;
     private readonly TimeProvider _saat;
 
     public PanelimModel(IYasliService yasliService, IHatirlatmaTakipService takipService,
-        IOlayService olayService, TimeProvider saat)
+        IAktiviteService aktiviteService, IOlayService olayService, TimeProvider saat)
     {
         _yasliService = yasliService;
         _takipService = takipService;
+        _aktiviteService = aktiviteService;
         _olayService = olayService;
         _saat = saat;
     }
 
     public Yasli Yasli { get; private set; } = null!;
     public List<PlanOgesi> Bugun { get; private set; } = new();
+    public AktiviteKaydi? BugunkuDurum { get; private set; }
 
     [TempData]
     public string? Mesaj { get; set; }
@@ -39,6 +43,7 @@ public class PanelimModel : PageModel
         var yasliId = User.YasliId()!.Value;
         Yasli = (await _yasliService.GetirAsync(yasliId))!;
         Bugun = await _takipService.GunlukPlanAsync(yasliId, DateOnly.FromDateTime(_saat.GetLocalNow().DateTime));
+        BugunkuDurum = await _aktiviteService.BugunkuDurumAsync(yasliId);
     }
 
     public async Task<IActionResult> OnPostYanitAsync(int hatirlatmaId, DateTime planlanan, bool alindi)
@@ -54,6 +59,26 @@ public class PanelimModel : PageModel
             return Forbid();
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or KeyNotFoundException)
+        {
+            Hata = ex.Message;
+        }
+        return RedirectToPage();
+    }
+
+    public async Task<IActionResult> OnPostDurumAsync(RuhHali? ruhHali, int? agri, string? not)
+    {
+        if (ruhHali is null)
+        {
+            Hata = "Lütfen bugün nasıl hissettiğinizi seçin.";
+            return RedirectToPage();
+        }
+        try
+        {
+            // Durum her zaman oturumdaki yaşlıya yazılır; formdan yaşlı kimliği alınmaz.
+            await _aktiviteService.GunlukDurumBildirAsync(User.YasliId()!.Value, ruhHali.Value, agri, not);
+            Mesaj = "Bugünkü durumunuz kaydedildi.";
+        }
+        catch (ArgumentException ex)
         {
             Hata = ex.Message;
         }

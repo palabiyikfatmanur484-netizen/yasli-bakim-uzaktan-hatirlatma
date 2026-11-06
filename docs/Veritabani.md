@@ -43,7 +43,8 @@
 |---|---|
 | `CK_Yasli_DogumTarihi` | `DogumTarihi >= '1900-01-01'` |
 | `CK_Hatirlatma_Tarih` | `BitisTarihi IS NULL OR BitisTarihi >= BaslangicTarihi` |
-| `CK_AktiviteKaydi_Tur` | Hatırlatma onayında (`Tur=1`) hatırlatma ve durum dolu; günlük durumda (`Tur=2`) hatırlatma boş, ruh hali dolu. |
+| `CK_AktiviteKaydi_Tur` | Hatırlatma onayında (`Tur=1`) hatırlatma ve durum dolu; günlük durumda (`Tur=2`) hatırlatma boş, ruh hali dolu; aktivitede (`Tur=3`, Hafta 7) hatırlatma boş, kategori ve süre dolu. |
+| `CK_AktiviteKaydi_Agri`, `CK_AktiviteKaydi_Sure` | Ağrı 0–10, süre 1–480 dakika (Hafta 7). |
 | `CK_Olay_CozulmeZamani` | `CozulmeZamani IS NULL OR CozulmeZamani >= OlusmaZamani` |
 | `UX_Bakici_Eposta` | Aynı e-posta ile iki bakıcı olamaz. |
 | `NOT NULL` + uzunluk | Ad/Soyad 50, Eposta 100, Baslik 100, açıklama/not alanları 500 karakter. |

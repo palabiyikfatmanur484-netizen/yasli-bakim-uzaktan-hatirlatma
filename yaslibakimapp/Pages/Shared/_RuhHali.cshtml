@@ -1,0 +1,22 @@
+@using YasliBakim.Entities.Enums
+@model RuhHali?
+@{
+    // Renk tek başına anlam taşımaz (renk körlüğü): her zaman metin de yazılır, emoji ekran okuyucudan gizlenir.
+    var (emoji, renk) = Model switch
+    {
+        RuhHali.CokIyi => ("😄", "bg-success"),
+        RuhHali.Iyi => ("🙂", "bg-success"),
+        RuhHali.Normal => ("😐", "bg-secondary"),
+        RuhHali.Kotu => ("🙁", "bg-warning text-dark"),
+        RuhHali.CokKotu => ("😣", "bg-danger"),
+        _ => ("", "bg-light text-dark"),
+    };
+}
+@if (Model is null)
+{
+    <span class="text-muted">—</span>
+}
+else
+{
+    <span class="badge @renk"><span aria-hidden="true">@emoji</span> @Model.Value.GorunenAd()</span>
+}

@@ -8,6 +8,7 @@ erDiagram
     BAKICI |o--o{ HATIRLATMA : "oluşturur"
     YASLI ||--o{ AKTIVITE_KAYDI : "kaydeder"
     HATIRLATMA |o--o{ AKTIVITE_KAYDI : "onaylanır"
+    BAKICI |o--o{ AKTIVITE_KAYDI : "yaşlı adına girer"
     YASLI ||--o{ OLAY : "tetikler"
     BAKICI |o--o{ OLAY : "ilgilenir"
     AKTIVITE_KAYDI |o--o| OLAY : "neden olur"
@@ -73,11 +74,15 @@ erDiagram
         int Id PK
         int YasliId FK
         int HatirlatmaId FK "nullable"
-        enum Tur "HatirlatmaOnayi | GunlukDurum"
+        int KaydedenBakiciId FK "nullable; boş = yaşlının kendisi"
+        enum Tur "HatirlatmaOnayi | GunlukDurum | Aktivite"
         datetime PlanlananZaman "nullable; (HatirlatmaId, PlanlananZaman) unique"
         datetime KayitZamani
         enum Durum "Tamamlandi | Atlandi | Gecikti | Kacirildi"
         enum RuhHali "CokIyi ... CokKotu"
+        int AgriSeviyesi "nullable, 0-10"
+        enum Kategori "nullable; Yuruyus | Sosyal | ..."
+        int SureDakika "nullable, 1-480"
         string Not
         datetime OlusturmaTarihi
     }
@@ -104,7 +109,7 @@ erDiagram
 | **Bakici** | Profesyonel bakıcı veya aile yakını | Yakın paneli |
 | **YasliBakici** | Yaşlı–bakıcı eşleştirmesi (ara tablo) | Yakın paneli |
 | **Hatirlatma** | İlaç, randevu, su vb. zamanlanmış hatırlatma | Hatırlatma |
-| **AktiviteKaydi** | Hatırlatma onayı veya günlük durum bildirimi | Günlük durum |
+| **AktiviteKaydi** | Hatırlatma onayı, günlük durum bildirimi veya aktivite | Hatırlatma, Günlük durum ve aktivite (Hafta 7) |
 | **Olay** | Yakınlara giden uyarı/alarm | Anomali bildirimi, Acil buton |
 | **Kullanici** | Giriş hesabı (e-posta, parola hash'i, rol) | Kimlik doğrulama (Hafta 5) |
 
@@ -115,8 +120,9 @@ erDiagram
 | Yasli ↔ Bakici | **N-N** | Bir yaşlıya birden fazla kişi bakabilir, bir bakıcı birden fazla yaşlıyı takip edebilir. `YasliBakici` ara tablosu ile çözülür. |
 | Yasli → Hatirlatma | **1-N** | Bir yaşlının çok sayıda hatırlatması olur; her hatırlatma tek bir yaşlıya aittir. |
 | Bakici → Hatirlatma | **1-N** (opsiyonel) | Hatırlatmayı oluşturan bakıcı. Bakıcı silinirse alan `NULL` olur. |
-| Yasli → AktiviteKaydi | **1-N** | Yaşlının tüm onay ve günlük durum kayıtları. |
-| Hatirlatma → AktiviteKaydi | **1-N** (opsiyonel) | Bir hatırlatma her tekrarında bir kayıt üretir. Günlük durum kayıtlarında boştur. |
+| Yasli → AktiviteKaydi | **1-N** | Yaşlının tüm onay, günlük durum ve aktivite kayıtları (zaman çizelgesi). |
+| Hatirlatma → AktiviteKaydi | **1-N** (opsiyonel) | Bir hatırlatma her tekrarında bir kayıt üretir. Günlük durum ve aktivite kayıtlarında boştur. |
+| Bakici → AktiviteKaydi | **1-N** (opsiyonel) | Aktiviteyi yaşlı adına giren bakıcı. Bakıcı silinirse kayıt kalır, alan `NULL` olur. |
 | Yasli → Olay | **1-N** | Yaşlıya ait tüm alarmlar. |
 | Bakici → Olay | **1-N** (opsiyonel) | Alarmla ilgilenen bakıcı. |
 | AktiviteKaydi → Olay | **1-1** (0..1) | Atlanan bir ilaç kaydı en fazla bir alarm üretir. `AktiviteKaydiId` üzerinde benzersiz (unique) indeks vardır. |

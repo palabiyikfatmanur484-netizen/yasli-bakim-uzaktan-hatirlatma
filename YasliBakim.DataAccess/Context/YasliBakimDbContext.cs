@@ -86,20 +86,29 @@ public class YasliBakimDbContext : DbContext
             e.HasIndex(x => new { x.YasliId, x.AktifMi, x.Saat }).HasDatabaseName("IX_Hatirlatma_Yasli_Aktif_Saat");
         });
 
-        // 1-N: Yaşlı -> AktiviteKaydi, Hatırlatma -> AktiviteKaydi
+        // 1-N: Yaşlı -> AktiviteKaydi, Hatırlatma -> AktiviteKaydi, Bakıcı -> AktiviteKaydi (kaydeden)
         modelBuilder.Entity<AktiviteKaydi>(e =>
         {
-            // Hatırlatma onayında hatırlatma ve durum zorunlu; günlük durumda hatırlatma boş, ruh hali zorunlu.
+            // Türe göre zorunlu alanlar: onayda hatırlatma + durum + planlanan zaman,
+            // günlük durumda ruh hali, aktivitede kategori + süre. Hatırlatma yalnızca onayda dolu olabilir.
             e.ToTable("AktiviteKayitlari", t =>
+            {
                 t.HasCheckConstraint("CK_AktiviteKaydi_Tur",
                     "([Tur] = 1 AND [HatirlatmaId] IS NOT NULL AND [Durum] IS NOT NULL AND [PlanlananZaman] IS NOT NULL) OR " +
-                    "([Tur] = 2 AND [HatirlatmaId] IS NULL AND [RuhHali] IS NOT NULL)"));
+                    "([Tur] = 2 AND [HatirlatmaId] IS NULL AND [RuhHali] IS NOT NULL) OR " +
+                    "([Tur] = 3 AND [HatirlatmaId] IS NULL AND [Kategori] IS NOT NULL AND [SureDakika] IS NOT NULL)");
+                t.HasCheckConstraint("CK_AktiviteKaydi_Agri", "[AgriSeviyesi] IS NULL OR [AgriSeviyesi] BETWEEN 0 AND 10");
+                t.HasCheckConstraint("CK_AktiviteKaydi_Sure", "[SureDakika] IS NULL OR [SureDakika] BETWEEN 1 AND 480");
+            });
 
             e.Property(x => x.Not).HasMaxLength(500);
             e.HasOne(x => x.Yasli).WithMany(y => y.AktiviteKayitlari)
                 .HasForeignKey(x => x.YasliId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(x => x.Hatirlatma).WithMany(h => h.AktiviteKayitlari)
                 .HasForeignKey(x => x.HatirlatmaId).OnDelete(DeleteBehavior.NoAction);
+            // Bakıcı silinirse girdiği kayıtlar yaşlının geçmişinde kalır, yalnızca "kaydeden" boşalır.
+            e.HasOne(x => x.KaydedenBakici).WithMany(b => b.KaydettigiAktiviteler)
+                .HasForeignKey(x => x.KaydedenBakiciId).OnDelete(DeleteBehavior.SetNull);
 
             // Yaşlının zaman çizelgesi: tarihe göre son kayıtlar.
             e.HasIndex(x => new { x.YasliId, x.KayitZamani }).HasDatabaseName("IX_AktiviteKaydi_Yasli_Zaman");

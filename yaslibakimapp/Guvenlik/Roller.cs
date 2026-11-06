@@ -10,4 +10,5 @@ public static class Roller
     public const string Yasli = nameof(KullaniciRolu.Yasli);
 
     public const string YoneticiVeyaBakici = Yonetici + "," + Bakici;
+    public const string YasliVeyaBakici = Yasli + "," + Bakici;
 }

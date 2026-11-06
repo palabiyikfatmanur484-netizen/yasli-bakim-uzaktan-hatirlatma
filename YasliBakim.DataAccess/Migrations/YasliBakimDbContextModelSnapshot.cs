@@ -30,10 +30,19 @@ namespace YasliBakim.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AgriSeviyesi")
+                        .HasColumnType("int");
+
                     b.Property<int?>("Durum")
                         .HasColumnType("int");
 
                     b.Property<int?>("HatirlatmaId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Kategori")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("KaydedenBakiciId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("KayitZamani")
@@ -52,6 +61,9 @@ namespace YasliBakim.DataAccess.Migrations
                     b.Property<int?>("RuhHali")
                         .HasColumnType("int");
 
+                    b.Property<int?>("SureDakika")
+                        .HasColumnType("int");
+
                     b.Property<int>("Tur")
                         .HasColumnType("int");
 
@@ -59,6 +71,8 @@ namespace YasliBakim.DataAccess.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("KaydedenBakiciId");
 
                     b.HasIndex("HatirlatmaId", "PlanlananZaman")
                         .IsUnique()
@@ -70,7 +84,11 @@ namespace YasliBakim.DataAccess.Migrations
 
                     b.ToTable("AktiviteKayitlari", null, t =>
                         {
-                            t.HasCheckConstraint("CK_AktiviteKaydi_Tur", "([Tur] = 1 AND [HatirlatmaId] IS NOT NULL AND [Durum] IS NOT NULL AND [PlanlananZaman] IS NOT NULL) OR ([Tur] = 2 AND [HatirlatmaId] IS NULL AND [RuhHali] IS NOT NULL)");
+                            t.HasCheckConstraint("CK_AktiviteKaydi_Agri", "[AgriSeviyesi] IS NULL OR [AgriSeviyesi] BETWEEN 0 AND 10");
+
+                            t.HasCheckConstraint("CK_AktiviteKaydi_Sure", "[SureDakika] IS NULL OR [SureDakika] BETWEEN 1 AND 480");
+
+                            t.HasCheckConstraint("CK_AktiviteKaydi_Tur", "([Tur] = 1 AND [HatirlatmaId] IS NOT NULL AND [Durum] IS NOT NULL AND [PlanlananZaman] IS NOT NULL) OR ([Tur] = 2 AND [HatirlatmaId] IS NULL AND [RuhHali] IS NOT NULL) OR ([Tur] = 3 AND [HatirlatmaId] IS NULL AND [Kategori] IS NOT NULL AND [SureDakika] IS NOT NULL)");
                         });
                 });
 
@@ -379,6 +397,11 @@ namespace YasliBakim.DataAccess.Migrations
                         .HasForeignKey("HatirlatmaId")
                         .OnDelete(DeleteBehavior.NoAction);
 
+                    b.HasOne("YasliBakim.Entities.Concrete.Bakici", "KaydedenBakici")
+                        .WithMany("KaydettigiAktiviteler")
+                        .HasForeignKey("KaydedenBakiciId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("YasliBakim.Entities.Concrete.Yasli", "Yasli")
                         .WithMany("AktiviteKayitlari")
                         .HasForeignKey("YasliId")
@@ -386,6 +409,8 @@ namespace YasliBakim.DataAccess.Migrations
                         .IsRequired();
 
                     b.Navigation("Hatirlatma");
+
+                    b.Navigation("KaydedenBakici");
 
                     b.Navigation("Yasli");
                 });
@@ -472,6 +497,8 @@ namespace YasliBakim.DataAccess.Migrations
             modelBuilder.Entity("YasliBakim.Entities.Concrete.Bakici", b =>
                 {
                     b.Navigation("IlgilendigiOlaylar");
+
+                    b.Navigation("KaydettigiAktiviteler");
 
                     b.Navigation("OlusturduguHatirlatmalar");
 

@@ -88,26 +88,41 @@ public static class OrnekVeri
 
             foreach (var (y, i) in new[] { ayse, mehmet, fatma, zeynep }.Select((y, i) => (y, i)))
             {
+                // Günde bir durum kaydı: Mehmet'in dünkü durumu aşağıdaki "Kötü" kaydıdır.
+                if (y == mehmet && gun == 1)
+                    continue;
                 aktiviteler.Add(new AktiviteKaydi
                 {
                     Yasli = y,
                     Tur = AktiviteTuru.GunlukDurum,
                     RuhHali = ruhHalleri[(gun + i) % ruhHalleri.Length],
+                    AgriSeviyesi = y == fatma ? 3 + gun : null,      // osteoporoz: hafif sırt ağrısı
                     KayitZamani = tarih.AddHours(20),
                 });
             }
         }
 
-       
         var mehmetKotu = new AktiviteKaydi
         {
             Yasli = mehmet,
             Tur = AktiviteTuru.GunlukDurum,
             RuhHali = RuhHali.Kotu,
+            AgriSeviyesi = 4,
             Not = "Nefes darlığı arttı.",
             KayitZamani = DateTime.Today.AddDays(-1).AddHours(14),
         };
         aktiviteler.Add(mehmetKotu);
+
+        // Serbest aktiviteler: bir kısmını yaşlı kendisi, bir kısmını bakıcısı girmiş.
+        var dun = DateTime.Today.AddDays(-1);
+        aktiviteler.AddRange(new[]
+        {
+            new AktiviteKaydi { Yasli = ayse,   Tur = AktiviteTuru.Aktivite, Kategori = AktiviteKategorisi.Yuruyus, SureDakika = 30, KayitZamani = dun.AddHours(10), OlusturmaTarihi = dun.AddHours(10).AddMinutes(40), Not = "Parkta" },
+            new AktiviteKaydi { Yasli = ayse,   Tur = AktiviteTuru.Aktivite, Kategori = AktiviteKategorisi.Sosyal,  SureDakika = 20, KayitZamani = dun.AddHours(18), OlusturmaTarihi = dun.AddHours(18).AddMinutes(25), Not = "Kızımla telefonda konuştum" },
+            new AktiviteKaydi { Yasli = mehmet, Tur = AktiviteTuru.Aktivite, Kategori = AktiviteKategorisi.Sosyal,  SureDakika = 60, KayitZamani = dun.AddDays(-1).AddHours(15), KaydedenBakici = can, OlusturmaTarihi = dun.AddDays(-1).AddHours(16) },
+            new AktiviteKaydi { Yasli = fatma,  Tur = AktiviteTuru.Aktivite, Kategori = AktiviteKategorisi.Hobi,    SureDakika = 45, KayitZamani = dun.AddHours(14), OlusturmaTarihi = dun.AddHours(15), Not = "Örgü" },
+            new AktiviteKaydi { Yasli = zeynep, Tur = AktiviteTuru.Aktivite, Kategori = AktiviteKategorisi.Yuruyus, SureDakika = 40, KayitZamani = dun.AddHours(17), KaydedenBakici = selin, OlusturmaTarihi = dun.AddHours(18) },
+        });
 
         var atlananIlac = aktiviteler.Single(a => a.Durum == AktiviteDurumu.Atlandi);
 

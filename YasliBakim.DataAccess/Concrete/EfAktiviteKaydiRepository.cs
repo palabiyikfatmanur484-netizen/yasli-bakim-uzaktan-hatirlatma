@@ -13,13 +13,30 @@ public class EfAktiviteKaydiRepository : EfGenericRepository<AktiviteKaydi>, IAk
     }
 
     // IX_AktiviteKaydi_Yasli_Zaman indeksini kullanır.
-    public Task<List<AktiviteKaydi>> GetSonKayitlarAsync(int yasliId, DateTime baslangic) =>
-        _dbSet
+    public Task<List<AktiviteKaydi>> GetGecmisAsync(int yasliId, DateTime baslangic, DateTime bitis, AktiviteTuru? tur = null)
+    {
+        var sorgu = _dbSet
             .Include(a => a.Hatirlatma)
-            .Where(a => a.YasliId == yasliId && a.KayitZamani >= baslangic)
+            .Include(a => a.KaydedenBakici)
+            .Where(a => a.YasliId == yasliId && a.KayitZamani >= baslangic && a.KayitZamani < bitis);
+        if (tur is not null)
+            sorgu = sorgu.Where(a => a.Tur == tur);
+
+        return sorgu
             .OrderByDescending(a => a.KayitZamani)
             .AsNoTracking()
             .ToListAsync();
+    }
+
+    public Task<AktiviteKaydi?> GetGunlukDurumAsync(int yasliId, DateOnly gun)
+    {
+        var gunBasi = gun.ToDateTime(TimeOnly.MinValue);
+        return _dbSet
+            .Where(a => a.YasliId == yasliId && a.Tur == AktiviteTuru.GunlukDurum
+                        && a.KayitZamani >= gunBasi && a.KayitZamani < gunBasi.AddDays(1))
+            .OrderByDescending(a => a.KayitZamani)
+            .FirstOrDefaultAsync();
+    }
 
     // UX_AktiviteKaydi_Hatirlatma_Planlanan indeksini kullanır.
     public Task<List<AktiviteKaydi>> GetOnaylarAsync(IReadOnlyCollection<int> hatirlatmaIdler, DateTime baslangic, DateTime bitis) =>

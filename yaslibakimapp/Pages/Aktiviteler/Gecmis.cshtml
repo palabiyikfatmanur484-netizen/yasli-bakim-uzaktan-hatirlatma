@@ -1,0 +1,126 @@
+@page
+@model yaslibakimapp.Pages.Aktiviteler.GecmisModel
+@using YasliBakim.Entities.Enums
+@{
+    ViewData["Title"] = Model.YasliMi ? "Geçmişim" : $"{Model.Yasli.Ad} {Model.Yasli.Soyad} — geçmiş";
+    var routeYasliId = Model.YasliMi ? (int?)null : Model.Yasli.Id;
+}
+
+@if (Model.YasliMi)
+{
+    <a asp-page="/Panelim">&larr; Panelim</a>
+}
+else
+{
+    <a asp-page="/Yaslilar/Detay" asp-route-id="@Model.Yasli.Id">&larr; @Model.Yasli.Ad @Model.Yasli.Soyad</a>
+}
+<div class="d-flex flex-wrap justify-content-between align-items-center mt-2 gap-2">
+    <h1 class="h3 mb-0">@ViewData["Title"]</h1>
+    @if (!User.IsInRole(Roller.Yonetici))
+    {
+        <a class="btn btn-primary" asp-page="/Aktiviteler/Yeni" asp-route-yasliId="@routeYasliId">+ Aktivite kaydet</a>
+    }
+</div>
+
+@if (Model.Mesaj is not null)
+{
+    <div class="alert alert-info mt-3" role="status">@Model.Mesaj</div>
+}
+@if (Model.Hata is not null)
+{
+    <div class="alert alert-danger mt-3" role="alert">@Model.Hata</div>
+}
+
+<form method="get" class="row g-2 align-items-end my-3" aria-label="Geçmiş filtresi">
+    @if (!Model.YasliMi)
+    {
+        <input type="hidden" name="yasliId" value="@Model.Yasli.Id" />
+    }
+    <div class="col-sm-3">
+        <label for="baslangic" class="form-label">Başlangıç</label>
+        <input id="baslangic" name="baslangic" type="date" class="form-control" value="@Model.Baslangic?.ToString("yyyy-MM-dd")" />
+    </div>
+    <div class="col-sm-3">
+        <label for="bitis" class="form-label">Bitiş</label>
+        <input id="bitis" name="bitis" type="date" class="form-control" value="@Model.Bitis?.ToString("yyyy-MM-dd")" />
+    </div>
+    <div class="col-sm-3">
+        <label for="tur" class="form-label">Kayıt türü</label>
+        <select id="tur" name="tur" class="form-select">
+            <option value="">Tümü</option>
+            @foreach (var t in Enum.GetValues<AktiviteTuru>())
+            {
+                <option value="@t" selected="@(Model.Tur == t)">@t.GorunenAd()</option>
+            }
+        </select>
+    </div>
+    <div class="col-sm-3">
+        <button type="submit" class="btn btn-outline-primary w-100">Göster</button>
+    </div>
+    <div class="form-text">En fazla 31 günlük aralık gösterilir.</div>
+</form>
+
+<h2 class="h5">Günlük özet</h2>
+<div class="table-responsive">
+<table class="table table-sm align-middle">
+    <caption class="visually-hidden">Gün gün ruh hali, ağrı, aktivite süresi ve alınan ilaçlar</caption>
+    <thead><tr><th scope="col">Gün</th><th scope="col">Ruh hali</th><th scope="col">Ağrı</th><th scope="col">Aktivite</th><th scope="col">Hatırlatmalar</th></tr></thead>
+    <tbody>
+    @foreach (var g in Model.Ozet)
+    {
+        <tr>
+            <th scope="row">@g.Gun.ToString("dd.MM ddd")</th>
+            <td><partial name="_RuhHali" model="g.Durum?.RuhHali" /></td>
+            <td>@(g.Durum?.AgriSeviyesi is { } a ? $"{a}/10" : "—")</td>
+            <td>@(g.AktiviteSayisi == 0 ? "—" : $"{g.AktiviteSayisi} kayıt, {g.AktiviteDakika} dk")</td>
+            <td>@(g.YanitlananDoz == 0 ? "—" : $"{g.AlinanDoz} / {g.YanitlananDoz} yapıldı")</td>
+        </tr>
+    }
+    </tbody>
+</table>
+</div>
+
+<h2 class="h5 mt-4">Tüm kayıtlar (@Model.Kayitlar.Count)</h2>
+@if (Model.Kayitlar.Count == 0)
+{
+    <p class="text-muted">Bu aralıkta kayıt yok.</p>
+}
+<ul class="list-group">
+    @foreach (var k in Model.Kayitlar)
+    {
+        <li class="list-group-item d-flex flex-wrap justify-content-between align-items-start gap-2">
+            <div>
+                <strong>@k.KayitZamani.ToString("dd.MM HH:mm")</strong> ·
+                @switch (k.Tur)
+                {
+                    case AktiviteTuru.HatirlatmaOnayi:
+                        <span>@k.Hatirlatma?.Baslik (@k.PlanlananZaman?.ToString("HH:mm")) — @k.Durum?.GorunenAd()</span>
+                        break;
+                    case AktiviteTuru.GunlukDurum:
+                        <span>Günlük durum: <partial name="_RuhHali" model="k.RuhHali" />@(k.AgriSeviyesi is { } a ? $" · ağrı {a}/10" : "")</span>
+                        break;
+                    default:
+                        <span>@k.Kategori?.GorunenAd(), @k.SureDakika dk</span>
+                        break;
+                }
+                @if (k.Not is not null)
+                {
+                    <div class="text-muted small">@k.Not</div>
+                }
+                @if (k.KaydedenBakici is not null)
+                {
+                    <div class="text-muted small">Kaydeden: @k.KaydedenBakici.Ad @k.KaydedenBakici.Soyad</div>
+                }
+            </div>
+            @if (Model.SilinebilirMi(k))
+            {
+                <form method="post" asp-page-handler="Sil" asp-route-yasliId="@routeYasliId"
+                      asp-route-baslangic="@Model.Baslangic?.ToString("yyyy-MM-dd")" asp-route-bitis="@Model.Bitis?.ToString("yyyy-MM-dd")" asp-route-tur="@Model.Tur">
+                    <input type="hidden" name="kayitId" value="@k.Id" />
+                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                            aria-label="@k.KayitZamani.ToString("dd.MM HH:mm") kaydını sil">Sil</button>
+                </form>
+            }
+        </li>
+    }
+</ul>

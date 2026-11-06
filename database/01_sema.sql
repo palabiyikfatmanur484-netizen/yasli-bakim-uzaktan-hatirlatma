@@ -362,3 +362,96 @@ END;
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261106075117_GunlukDurumVeAktivite'
+)
+BEGIN
+    ALTER TABLE [AktiviteKayitlari] DROP CONSTRAINT [CK_AktiviteKaydi_Tur];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261106075117_GunlukDurumVeAktivite'
+)
+BEGIN
+    ALTER TABLE [AktiviteKayitlari] ADD [AgriSeviyesi] int NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261106075117_GunlukDurumVeAktivite'
+)
+BEGIN
+    ALTER TABLE [AktiviteKayitlari] ADD [Kategori] int NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261106075117_GunlukDurumVeAktivite'
+)
+BEGIN
+    ALTER TABLE [AktiviteKayitlari] ADD [KaydedenBakiciId] int NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261106075117_GunlukDurumVeAktivite'
+)
+BEGIN
+    ALTER TABLE [AktiviteKayitlari] ADD [SureDakika] int NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261106075117_GunlukDurumVeAktivite'
+)
+BEGIN
+    CREATE INDEX [IX_AktiviteKayitlari_KaydedenBakiciId] ON [AktiviteKayitlari] ([KaydedenBakiciId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261106075117_GunlukDurumVeAktivite'
+)
+BEGIN
+    EXEC(N'ALTER TABLE [AktiviteKayitlari] ADD CONSTRAINT [CK_AktiviteKaydi_Agri] CHECK ([AgriSeviyesi] IS NULL OR [AgriSeviyesi] BETWEEN 0 AND 10)');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261106075117_GunlukDurumVeAktivite'
+)
+BEGIN
+    EXEC(N'ALTER TABLE [AktiviteKayitlari] ADD CONSTRAINT [CK_AktiviteKaydi_Sure] CHECK ([SureDakika] IS NULL OR [SureDakika] BETWEEN 1 AND 480)');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261106075117_GunlukDurumVeAktivite'
+)
+BEGIN
+    EXEC(N'ALTER TABLE [AktiviteKayitlari] ADD CONSTRAINT [CK_AktiviteKaydi_Tur] CHECK (([Tur] = 1 AND [HatirlatmaId] IS NOT NULL AND [Durum] IS NOT NULL AND [PlanlananZaman] IS NOT NULL) OR ([Tur] = 2 AND [HatirlatmaId] IS NULL AND [RuhHali] IS NOT NULL) OR ([Tur] = 3 AND [HatirlatmaId] IS NULL AND [Kategori] IS NOT NULL AND [SureDakika] IS NOT NULL))');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261106075117_GunlukDurumVeAktivite'
+)
+BEGIN
+    ALTER TABLE [AktiviteKayitlari] ADD CONSTRAINT [FK_AktiviteKayitlari_Bakicilar_KaydedenBakiciId] FOREIGN KEY ([KaydedenBakiciId]) REFERENCES [Bakicilar] ([Id]) ON DELETE SET NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261106075117_GunlukDurumVeAktivite'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261106075117_GunlukDurumVeAktivite', N'10.0.13');
+END;
+
+COMMIT;
+GO
+

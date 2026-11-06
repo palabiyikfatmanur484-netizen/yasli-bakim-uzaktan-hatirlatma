@@ -32,7 +32,8 @@ public class DetayModel : PageModel
     public List<Hatirlatma> Hatirlatmalar { get; private set; } = new();
     public List<PlanOgesi> BugunkuPlan { get; private set; } = new();
     public UyumOzeti Uyum { get; private set; } = null!;
-    public List<AktiviteKaydi> SonKayitlar { get; private set; } = new();
+    public AktiviteKaydi? BugunkuDurum { get; private set; }
+    public List<GunOzeti> Ozet { get; private set; } = new();
     public DateTime Simdi => _saat.GetLocalNow().DateTime;
 
     [TempData]
@@ -53,7 +54,9 @@ public class DetayModel : PageModel
         Hatirlatmalar = await _hatirlatmaService.YaslininHatirlatmalariAsync(id);
         BugunkuPlan = await _takipService.GunlukPlanAsync(id, DateOnly.FromDateTime(Simdi));
         Uyum = await _takipService.UyumOzetiAsync(id, gun: 7);
-        SonKayitlar = await _aktiviteService.SonKayitlarAsync(id, gun: 7);
+        BugunkuDurum = await _aktiviteService.BugunkuDurumAsync(id);
+        var bugun = DateOnly.FromDateTime(Simdi);
+        Ozet = await _aktiviteService.GunlukOzetAsync(id, bugun.AddDays(-6), bugun);
         return Page();
     }
 

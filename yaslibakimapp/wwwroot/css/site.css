@@ -29,3 +29,18 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+/* Yaşlı kullanıcılar için seçim butonları: en az 48x48 px dokunma alanı (WCAG 2.5.5), seçili olan belirgin. */
+.secim-buton {
+  min-width: 6.5rem;
+  min-height: 3rem;
+}
+
+.btn-check:checked + .secim-buton {
+  outline: 3px solid #0a3d91;
+  outline-offset: 2px;
+  font-weight: 600;
+}
+
+.btn-check:focus-visible + .secim-buton {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.35rem #258cfb;
+}

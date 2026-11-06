@@ -1,19 +1,25 @@
 @page
 @model PanelimModel
 @using YasliBakim.Business.Abstract
+@using YasliBakim.Entities.Enums
 @{
     ViewData["Title"] = "Panelim";
+    var emojiler = new Dictionary<RuhHali, string>
+    {
+        [RuhHali.CokIyi] = "😄", [RuhHali.Iyi] = "🙂", [RuhHali.Normal] = "😐", [RuhHali.Kotu] = "🙁", [RuhHali.CokKotu] = "😣",
+    };
 }
 
 <h1 class="h3">Merhaba @Model.Yasli.Ad</h1>
 
+@* role="status"/"alert": sonuç mesajı ekran okuyucu tarafından otomatik okunur. *@
 @if (Model.Mesaj is not null)
 {
-    <div class="alert alert-success fs-5">@Model.Mesaj</div>
+    <div class="alert alert-success fs-5" role="status">@Model.Mesaj</div>
 }
 @if (Model.Hata is not null)
 {
-    <div class="alert alert-warning fs-5">@Model.Hata</div>
+    <div class="alert alert-warning fs-5" role="alert">@Model.Hata</div>
 }
 
 <form method="post" asp-page-handler="Acil" class="my-4">
@@ -49,3 +55,52 @@
         </li>
     }
 </ul>
+
+<h2 class="h4 mt-5" id="durum-baslik">Bugün nasılsınız?</h2>
+@if (Model.BugunkuDurum is { } d)
+{
+    <p class="fs-5">
+        Bugün @d.KayitZamani.ToString("HH:mm")'de bildirdiniz: <partial name="_RuhHali" model="d.RuhHali" />
+        @if (d.AgriSeviyesi is not null) { <span>· Ağrı @d.AgriSeviyesi/10</span> }
+        <br /><span class="text-muted fs-6">Değiştirmek isterseniz yeniden seçip kaydedin.</span>
+    </p>
+}
+<form method="post" asp-page-handler="Durum" aria-labelledby="durum-baslik">
+    <fieldset class="mb-3">
+        <legend class="fs-5">Ruh haliniz</legend>
+        <div class="d-flex flex-wrap gap-2">
+            @foreach (var r in Enum.GetValues<RuhHali>())
+            {
+                <input type="radio" class="btn-check" name="ruhHali" id="ruh-@r" value="@r" autocomplete="off"
+                       checked="@(Model.BugunkuDurum?.RuhHali == r)" />
+                <label class="btn btn-outline-primary btn-lg secim-buton" for="ruh-@r">
+                    <span aria-hidden="true" class="fs-2 d-block">@emojiler[r]</span>@r.GorunenAd()
+                </label>
+            }
+        </div>
+    </fieldset>
+    <div class="row g-3 mb-3">
+        <div class="col-sm-6">
+            <label for="agri" class="form-label fs-5">Ağrınız var mı?</label>
+            <select id="agri" name="agri" class="form-select form-select-lg">
+                <option value="">Belirtmek istemiyorum</option>
+                @for (var i = 0; i <= 10; i++)
+                {
+                    var metin = i switch { 0 => "0 — Ağrı yok", 1 or 2 or 3 => $"{i} — Hafif", 4 or 5 or 6 => $"{i} — Orta", _ => $"{i} — Şiddetli" };
+                    <option value="@i" selected="@(Model.BugunkuDurum?.AgriSeviyesi == i)">@metin</option>
+                }
+            </select>
+        </div>
+        <div class="col-sm-6">
+            <label for="not" class="form-label fs-5">Not (isteğe bağlı)</label>
+            <input id="not" name="not" class="form-control form-control-lg" maxlength="500"
+                   value="@Model.BugunkuDurum?.Not" placeholder="ör. Bacağım ağrıyor" />
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg w-100 py-3">Durumumu kaydet</button>
+</form>
+
+<div class="d-flex flex-wrap gap-2 mt-5">
+    <a class="btn btn-outline-primary btn-lg flex-fill py-3" asp-page="/Aktiviteler/Yeni">+ Yaptığım bir şeyi kaydet</a>
+    <a class="btn btn-outline-secondary btn-lg flex-fill py-3" asp-page="/Aktiviteler/Gecmis">Geçmişim</a>
+</div>

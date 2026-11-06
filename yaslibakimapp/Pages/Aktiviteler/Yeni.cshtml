@@ -1,0 +1,69 @@
+@page
+@model yaslibakimapp.Pages.Aktiviteler.YeniModel
+@using YasliBakim.Entities.Enums
+@{
+    ViewData["Title"] = "Aktivite kaydet";
+    var yasliMi = User.IsInRole(Roller.Yasli);
+}
+
+@if (yasliMi)
+{
+    <a asp-page="/Panelim">&larr; Panelim</a>
+}
+else
+{
+    <a asp-page="/Aktiviteler/Gecmis" asp-route-yasliId="@Model.Yasli.Id">&larr; @Model.Yasli.Ad @Model.Yasli.Soyad — geçmiş</a>
+}
+<h1 class="h3 mt-2">@(yasliMi ? "Yaptığım bir şeyi kaydet" : $"{Model.Yasli.Ad} {Model.Yasli.Soyad} için aktivite")</h1>
+
+@if (Model.Hata is not null)
+{
+    <div class="alert alert-danger fs-5" role="alert">@Model.Hata</div>
+}
+
+<form method="post" class="col-lg-8">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input type="hidden" asp-for="YasliId" />
+
+    <fieldset class="mb-4" aria-describedby="kategori-hata">
+        <legend class="fs-5">Ne yaptınız?</legend>
+        <div class="d-flex flex-wrap gap-2">
+            @foreach (var k in Enum.GetValues<AktiviteKategorisi>())
+            {
+                <input type="radio" class="btn-check" asp-for="Form.Kategori" id="kat-@k" value="@k" />
+                <label class="btn btn-outline-primary btn-lg secim-buton" for="kat-@k">@k.GorunenAd()</label>
+            }
+        </div>
+        <span asp-validation-for="Form.Kategori" id="kategori-hata" class="text-danger d-block mt-1"></span>
+    </fieldset>
+
+    <fieldset class="mb-4" aria-describedby="sure-hata">
+        <legend class="fs-5">Ne kadar sürdü?</legend>
+        <div class="d-flex flex-wrap gap-2 mb-2">
+            @foreach (var s in yaslibakimapp.Pages.Aktiviteler.YeniModel.HazirSureler)
+            {
+                <input type="radio" class="btn-check" asp-for="Form.SureDakika" id="sure-@s" value="@s" />
+                <label class="btn btn-outline-secondary btn-lg secim-buton" for="sure-@s">@(s < 60 ? $"{s} dk" : s % 60 == 0 ? $"{s / 60} saat" : $"{s / 60} sa {s % 60} dk")</label>
+            }
+        </div>
+        <span asp-validation-for="Form.SureDakika" id="sure-hata" class="text-danger d-block"></span>
+    </fieldset>
+
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6">
+            <label asp-for="Form.Zaman" class="form-label fs-5">Ne zaman?</label>
+            <input asp-for="Form.Zaman" type="datetime-local" class="form-control form-control-lg"
+                   max="@Model.Simdi.ToString("yyyy-MM-ddTHH:mm")" min="@Model.Simdi.AddDays(-2).ToString("yyyy-MM-ddTHH:mm")"
+                   aria-describedby="zaman-yardim" />
+            <div id="zaman-yardim" class="form-text">Şu an veya son 2 gün içinde bir zaman.</div>
+            <span asp-validation-for="Form.Zaman" class="text-danger"></span>
+        </div>
+        <div class="col-sm-6">
+            <label asp-for="Form.Not" class="form-label fs-5">Not (isteğe bağlı)</label>
+            <input asp-for="Form.Not" class="form-control form-control-lg" placeholder="ör. Parkta yürüdüm" />
+            <span asp-validation-for="Form.Not" class="text-danger"></span>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg w-100 py-3">Kaydet</button>
+</form>
